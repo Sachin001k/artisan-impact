@@ -6,376 +6,7 @@
 <title>Artisan Impact — Every Child Is an Artist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#1B2620;
-    --paper:#F3EEE0;
-    --slate:#212F29;
-    --slate-2:#2B3B34;
-    --marigold:#E8A23B;
-    --poppy:#C8432E;
-    --cobalt:#3457D5;
-    --teal:#2F8F7E;
-    --line: rgba(27,38,32,0.14);
-    --line-light: rgba(243,238,224,0.18);
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Work Sans', sans-serif;
-    font-size:16px;
-    line-height:1.55;
-    overflow-x:hidden;
-  }
-  h1,h2,h3{
-    font-family:'Space Grotesk', sans-serif;
-    line-height:1.1;
-    letter-spacing:-0.01em;
-  }
-  a{color:inherit; text-decoration:none;}
-  img{max-width:100%; display:block;}
-  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
-  @media(max-width:640px){ .wrap{padding:0 20px;} }
-
-  .eyebrow{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.72rem;
-    text-transform:uppercase;
-    letter-spacing:0.14em;
-    color:var(--poppy);
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .eyebrow::before{
-    content:"";
-    width:20px; height:2px;
-    background:var(--poppy);
-    display:inline-block;
-  }
-  .hand{
-    font-family:'Caveat', cursive;
-    font-weight:700;
-  }
-
-  /* ---------- NAV ---------- */
-  header{
-    position:fixed; top:0; left:0; right:0; z-index:100;
-    background:rgba(243,238,224,0.86);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line);
-  }
-  .nav-inner{
-    max-width:1180px; margin:0 auto; padding:16px 32px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .logo{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:700; font-size:1.15rem;
-    display:flex; align-items:center; gap:10px;
-  }
-  .logo-dab{
-    width:16px; height:16px; border-radius:60% 40% 55% 45%/45% 55% 40% 60%;
-    background:var(--poppy); flex-shrink:0;
-  }
-  nav.pills{
-    display:flex; gap:6px; flex-wrap:wrap;
-  }
-  nav.pills a{
-    font-size:0.82rem; font-weight:500;
-    padding:7px 14px; border-radius:999px;
-    border:1px solid var(--line);
-    white-space:nowrap;
-    transition:all .2s ease;
-  }
-  nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .nav-toggle{ display:none; }
-  @media(max-width:920px){
-    nav.pills{ display:none; }
-    .nav-toggle{ display:block; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; border:1px solid var(--line); padding:7px 14px; border-radius:999px; background:none; }
-  }
-
-  /* ---------- PALETTE STRIP DIVIDER ---------- */
-  .palette-strip{
-    display:flex; height:14px;
-  }
-  .palette-strip span{ flex:1; }
-  .palette-strip span:nth-child(1){background:var(--poppy);}
-  .palette-strip span:nth-child(2){background:var(--marigold);}
-  .palette-strip span:nth-child(3){background:var(--teal);}
-  .palette-strip span:nth-child(4){background:var(--cobalt);}
-  .palette-strip span:nth-child(5){background:var(--ink);}
-
-  /* ---------- HERO ---------- */
-  .hero{
-    background:var(--slate);
-    color:var(--paper);
-    padding:150px 0 90px;
-    position:relative;
-    overflow:hidden;
-  }
-  .hero-grid{
-    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
-  }
-  @media(max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
-  .hero h1{
-    font-size:clamp(2.4rem, 5.5vw, 4.2rem);
-    font-weight:700;
-  }
-  .hero h1 em{
-    font-style:normal;
-    color:var(--marigold);
-  }
-  .hero p.sub{
-    margin-top:22px; max-width:480px;
-    font-size:1.08rem; color:rgba(243,238,224,0.78);
-  }
-  .cta-row{ display:flex; gap:14px; margin-top:34px; flex-wrap:wrap; }
-  .btn{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:13px 26px; border-radius:999px;
-    font-weight:600; font-size:0.92rem;
-    cursor:pointer; border:1px solid transparent;
-    transition:transform .18s ease, background .18s ease;
-  }
-  .btn:hover{ transform:translateY(-2px); }
-  .btn-primary{ background:var(--marigold); color:var(--ink); }
-  .btn-primary:hover{ background:#f0af4d; }
-  .btn-ghost{ border-color:rgba(243,238,224,0.4); color:var(--paper); }
-  .btn-ghost:hover{ background:rgba(243,238,224,0.1); }
-  .btn-dark{ background:var(--ink); color:var(--paper); }
-  .btn-dark:hover{ background:#2c3b32; }
-
-  /* collage of "artwork" blocks - abstract, not real images */
-  .collage{
-    position:relative; height:420px;
-  }
-  .swatch{
-    position:absolute; border-radius:6px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.35);
-    border:6px solid var(--paper);
-  }
-  .s1{ width:150px; height:190px; top:0; left:30px; background:linear-gradient(135deg,var(--poppy),#e0694f); transform:rotate(-7deg); }
-  .s2{ width:150px; height:120px; top:20px; right:20px; background:linear-gradient(135deg,var(--cobalt),#6c86e6); transform:rotate(5deg); }
-  .s3{ width:150px; height:150px; bottom:10px; right:60px; background:linear-gradient(135deg,var(--teal),#4fb5a3); transform:rotate(-4deg); }
-  .s4{ width:130px; height:110px; bottom:0; left:0; background:linear-gradient(135deg,var(--marigold),#f2c06e); transform:rotate(8deg); }
-  .collage-tag{
-    position:absolute; top:190px; left:60px;
-    background:var(--paper); color:var(--ink);
-    padding:6px 14px; border-radius:4px;
-    font-family:'Caveat', cursive; font-weight:700; font-size:1.1rem;
-    transform:rotate(-3deg);
-    box-shadow:0 8px 20px rgba(0,0,0,0.25);
-  }
-  @media(max-width:900px){ .collage{ height:300px; margin-top:10px; } }
-
-  /* ---------- SECTION SHELL ---------- */
-  section{ padding:90px 0; }
-  .section-head{ max-width:640px; margin-bottom:50px; }
-  .section-head h2{ font-size:clamp(1.8rem,3.6vw,2.6rem); }
-  .section-head p{ margin-top:14px; color:rgba(27,38,32,0.7); font-size:1.02rem; }
-
-  /* ---------- SHOP ---------- */
-  .filters{
-    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:38px;
-  }
-  .chip{
-    font-family:'IBM Plex Mono', monospace; font-size:0.78rem;
-    padding:8px 16px; border-radius:999px; border:1px solid var(--line);
-    cursor:pointer; background:transparent; transition:all .18s ease;
-  }
-  .chip.active, .chip:hover{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-
-  .shop-grid{
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:34px;
-  }
-  .polaroid{
-    background:#fff; padding:14px 14px 20px; border-radius:3px;
-    box-shadow:0 14px 30px rgba(27,38,32,0.12);
-    transition:transform .25s ease, box-shadow .25s ease;
-    cursor:default;
-  }
-  .polaroid:nth-child(odd){ transform:rotate(-1.4deg); }
-  .polaroid:nth-child(even){ transform:rotate(1.4deg); }
-  .polaroid:hover{ transform:rotate(0) translateY(-6px); box-shadow:0 20px 40px rgba(27,38,32,0.2); }
-  .art-thumb{
-    height:170px; border-radius:2px; margin-bottom:14px;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Caveat', cursive; font-size:1.4rem; color:rgba(255,255,255,0.9);
-  }
-  .polaroid h3{ font-size:1.02rem; margin-bottom:2px; }
-  .p-meta{ display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
-  .p-artist{ font-size:0.82rem; color:rgba(27,38,32,0.6); }
-  .p-price{ font-family:'IBM Plex Mono', monospace; font-weight:500; font-size:0.92rem; }
-  .add-btn{
-    margin-top:14px; width:100%; padding:10px; border-radius:6px;
-    border:1px solid var(--ink); background:none; font-weight:600; font-size:0.85rem;
-    cursor:pointer; transition:all .2s ease;
-  }
-  .add-btn:hover{ background:var(--ink); color:var(--paper); }
-  .add-btn.added{ background:var(--teal); border-color:var(--teal); color:#fff; }
-
-  .donate-inline{
-    margin-top:50px; padding:26px 30px; border-radius:14px;
-    background:var(--paper); border:1.5px dashed var(--poppy);
-    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
-  }
-  .donate-inline p{ font-size:0.98rem; max-width:460px; }
-
-  /* ---------- STORIES ---------- */
-  .stories-layout{ display:grid; grid-template-columns:1.2fr 1fr; gap:36px; }
-  @media(max-width:900px){ .stories-layout{ grid-template-columns:1fr; } }
-  .feature-card{
-    background:var(--slate); color:var(--paper); border-radius:16px;
-    padding:38px; position:relative; overflow:hidden;
-  }
-  .feature-card .eyebrow{ color:var(--marigold); }
-  .feature-card .eyebrow::before{ background:var(--marigold); }
-  .feature-card h3{ font-size:1.6rem; margin-bottom:12px; }
-  .feature-card p{ color:rgba(243,238,224,0.75); font-size:0.98rem; }
-  .tape{
-    position:absolute; top:-10px; right:36px; width:70px; height:26px;
-    background:rgba(232,162,59,0.85); transform:rotate(4deg);
-  }
-  .mini-list{ display:flex; flex-direction:column; gap:18px; }
-  .mini-story{
-    display:flex; gap:16px; align-items:flex-start;
-    padding:16px; border-radius:10px; border:1px solid var(--line);
-  }
-  .mini-thumb{
-    width:56px; height:56px; border-radius:8px; flex-shrink:0;
-  }
-  .mini-story h4{ font-size:0.95rem; font-weight:600; margin-bottom:3px; }
-  .mini-story span{ font-size:0.8rem; color:rgba(27,38,32,0.55); }
-
-  /* ---------- MENTORS ---------- */
-  .mentor-grid{
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:26px;
-  }
-  .mentor-card{
-    background:#fff; border-radius:14px; padding:26px 22px;
-    border:1px solid var(--line);
-    text-align:center;
-  }
-  .avatar{
-    width:66px; height:66px; border-radius:50%; margin:0 auto 16px;
-    display:flex; align-items:center; justify-content:center;
-    color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.1rem;
-  }
-  .mentor-card h4{ font-size:1rem; margin-bottom:2px; }
-  .mentor-card .role{ font-size:0.82rem; color:rgba(27,38,32,0.55); margin-bottom:14px; }
-  .icon-row{ display:flex; justify-content:center; gap:10px; }
-  .icon-row a{
-    width:32px; height:32px; border-radius:50%; border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center; font-size:0.8rem;
-    transition:all .18s ease;
-  }
-  .icon-row a:hover{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-
-  /* ---------- PROCESS TO PRODUCT ---------- */
-  .journey-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px; }
-  .journey-card{
-    border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#fff;
-  }
-  .ba-row{ display:grid; grid-template-columns:1fr 1fr; }
-  .ba-cell{
-    height:130px; display:flex; align-items:center; justify-content:center;
-    font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase;
-    letter-spacing:0.08em; color:rgba(255,255,255,0.85);
-  }
-  .journey-body{ padding:18px 20px; }
-  .journey-body h4{ font-size:0.98rem; margin-bottom:4px; }
-  .play-link{
-    display:inline-flex; align-items:center; gap:8px; margin-top:10px;
-    font-size:0.82rem; font-weight:600; color:var(--poppy);
-  }
-  .play-dot{
-    width:22px; height:22px; border-radius:50%; background:var(--poppy);
-    color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.6rem;
-  }
-
-  /* ---------- DONATE BANNER ---------- */
-  .donate-banner{
-    background:var(--ink); color:var(--paper); border-radius:20px;
-    padding:60px 50px; text-align:center; position:relative; overflow:hidden;
-  }
-  .donate-banner h2{ font-size:clamp(1.7rem,3.5vw,2.4rem); max-width:620px; margin:0 auto 16px; }
-  .donate-banner p{ color:rgba(243,238,224,0.75); max-width:520px; margin:0 auto 30px; }
-
-  /* ---------- ABOUT / TEAM ---------- */
-  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:start; }
-  @media(max-width:900px){ .about-grid{ grid-template-columns:1fr; } }
-  .team-grid{
-    margin-top:40px;
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:22px;
-  }
-  .team-card{ text-align:center; }
-  .team-avatar{
-    width:84px; height:84px; border-radius:50%; margin:0 auto 12px;
-    display:flex; align-items:center; justify-content:center; color:#fff;
-    font-family:'Space Grotesk',sans-serif; font-weight:700;
-  }
-  .team-card h4{ font-size:0.92rem; }
-  .team-card span{ font-size:0.78rem; color:rgba(27,38,32,0.55); }
-
-  /* ---------- VOLUNTEER FORM ---------- */
-  .volunteer-shell{
-    background:var(--slate-2); color:var(--paper); border-radius:20px;
-    padding:50px; display:grid; grid-template-columns:0.9fr 1.1fr; gap:50px;
-  }
-  @media(max-width:900px){ .volunteer-shell{ grid-template-columns:1fr; padding:34px 26px; } }
-  .volunteer-shell .eyebrow{ color:var(--marigold); }
-  .volunteer-shell .eyebrow::before{ background:var(--marigold); }
-  .volunteer-shell h2{ font-size:1.9rem; margin-bottom:16px; }
-  .volunteer-shell p{ color:rgba(243,238,224,0.72); }
-  form{ display:flex; flex-direction:column; gap:16px; }
-  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media(max-width:520px){ .field-row{ grid-template-columns:1fr; } }
-  label{ font-size:0.78rem; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; opacity:0.7; margin-bottom:6px; display:block; }
-  input, select, textarea{
-    width:100%; padding:12px 14px; border-radius:8px; border:1px solid rgba(243,238,224,0.25);
-    background:rgba(243,238,224,0.06); color:var(--paper); font-family:'Work Sans',sans-serif; font-size:0.92rem;
-  }
-  input::placeholder, textarea::placeholder{ color:rgba(243,238,224,0.4); }
-  textarea{ resize:vertical; min-height:90px; }
-  input:focus, select:focus, textarea:focus{ outline:2px solid var(--marigold); outline-offset:1px; }
-  .form-note{ font-size:0.8rem; color:rgba(243,238,224,0.5); }
-  .success-box{
-    display:none; text-align:center; padding:30px 10px;
-  }
-  .success-box .check{
-    width:52px; height:52px; border-radius:50%; background:var(--teal); color:#fff;
-    display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:1.4rem;
-  }
-
-  /* ---------- PARTNERS ---------- */
-  .partner-strip{
-    display:flex; flex-wrap:wrap; gap:16px; margin-top:10px;
-  }
-  .partner-logo{
-    padding:16px 26px; border:1px solid var(--line); border-radius:10px;
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.9rem;
-    color:rgba(27,38,32,0.55); transition:all .2s ease;
-  }
-  .partner-logo:hover{ color:var(--ink); border-color:var(--ink); transform:translateY(-2px); }
-
-  /* ---------- FOOTER ---------- */
-  footer{ background:var(--slate); color:rgba(243,238,224,0.6); padding:50px 0 30px; }
-  .footer-grid{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:24px; }
-  .footer-cols{ display:flex; gap:60px; flex-wrap:wrap; }
-  .footer-cols h5{ color:var(--paper); font-size:0.82rem; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:0.06em; }
-  .footer-cols a{ display:block; font-size:0.86rem; margin-bottom:8px; }
-  .footer-cols a:hover{ color:var(--paper); }
-  .footer-bottom{ margin-top:40px; padding-top:20px; border-top:1px solid rgba(243,238,224,0.12); font-size:0.78rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
-
-  @media (prefers-reduced-motion: reduce){
-    *{ transition:none !important; }
-    html{ scroll-behavior:auto; }
-  }
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -392,8 +23,28 @@
       <a href="#volunteer">Volunteer</a>
       <a href="#partners">Partners</a>
     </nav>
+    <button class="cart-toggle" id="cartToggle">
+      Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
   </div>
 </header>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h3>Your cart</h3>
+    <button class="cart-close" id="cartClose">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total-row"><span>Total</span><span id="cartTotal">₹0</span></div>
+    <button class="btn btn-dark btn-full" id="checkoutBtn">Checkout &amp; pay</button>
+  </div>
+</div>
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- HERO -->
 <section class="hero" style="padding-top:150px;">
@@ -436,42 +87,7 @@
     </div>
 
     <div class="shop-grid" id="shopGrid">
-      <div class="polaroid" data-cat="painting" data-price="1200">
-        <div class="art-thumb" style="background:linear-gradient(135deg,var(--poppy),#e0694f);">canvas 01</div>
-        <h3>Monsoon in Marigold</h3>
-        <div class="p-meta"><span class="p-artist">by Aanya, age 11</span><span class="p-price">₹1,200</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
-      <div class="polaroid" data-cat="craft" data-price="650">
-        <div class="art-thumb" style="background:linear-gradient(135deg,var(--teal),#4fb5a3);">clay 02</div>
-        <h3>Terracotta Bird Set</h3>
-        <div class="p-meta"><span class="p-artist">by Rehan, age 9</span><span class="p-price">₹650</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
-      <div class="polaroid" data-cat="print" data-price="450">
-        <div class="art-thumb" style="background:linear-gradient(135deg,var(--cobalt),#6c86e6);">print 03</div>
-        <h3>City of Kites</h3>
-        <div class="p-meta"><span class="p-artist">by Meher, age 13</span><span class="p-price">₹450</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
-      <div class="polaroid" data-cat="painting" data-price="1800">
-        <div class="art-thumb" style="background:linear-gradient(135deg,var(--marigold),#f2c06e);">canvas 04</div>
-        <h3>Grandmother's Garden</h3>
-        <div class="p-meta"><span class="p-artist">by Simran, age 12</span><span class="p-price">₹1,800</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
-      <div class="polaroid" data-cat="craft" data-price="900">
-        <div class="art-thumb" style="background:linear-gradient(135deg,#8a5cd6,#c390f0);">craft 05</div>
-        <h3>Woven Wall Hanging</h3>
-        <div class="p-meta"><span class="p-artist">by Dev, age 14</span><span class="p-price">₹900</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
-      <div class="polaroid" data-cat="print" data-price="380">
-        <div class="art-thumb" style="background:linear-gradient(135deg,#e0694f,var(--marigold));">print 06</div>
-        <h3>Our Street at Dusk</h3>
-        <div class="p-meta"><span class="p-artist">by Ira, age 10</span><span class="p-price">₹380</span></div>
-        <button class="add-btn">Add to cart</button>
-      </div>
+      <p>Loading the collection…</p>
     </div>
 
     <div class="donate-inline">
@@ -608,12 +224,25 @@
   <div class="wrap">
     <div class="donate-banner">
       <div class="eyebrow" style="justify-content:center; color:var(--marigold);">Give directly</div>
-      <h2>₹500 covers a month of paint, paper, and clay for one artist.</h2>
+      <h2>Fund paint, paper, and clay directly.</h2>
       <p>No purchase needed — just a direct line from you to the studio table.</p>
-      <div class="cta-row" style="justify-content:center;">
-        <a href="#" class="btn btn-primary">Donate ₹500</a>
-        <a href="#" class="btn btn-ghost">Choose your own amount</a>
-      </div>
+
+      <form class="donate-form" id="donateForm">
+        <div class="donate-presets">
+          <button type="button" class="donate-preset" data-amount="500">₹500</button>
+          <button type="button" class="donate-preset" data-amount="1000">₹1,000</button>
+          <button type="button" class="donate-preset" data-amount="2500">₹2,500</button>
+        </div>
+        <div class="donate-field">
+          <label for="donateAmount">Amount (₹)</label>
+          <input id="donateAmount" type="number" min="1" placeholder="e.g. 500" required>
+        </div>
+        <div class="donate-field">
+          <label for="donateEmail">Email</label>
+          <input id="donateEmail" type="email" placeholder="you@email.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Donate now</button>
+      </form>
     </div>
   </div>
 </section>
@@ -632,22 +261,10 @@
         <div class="eyebrow">The Team</div>
         <h2>Who runs the studio</h2>
         <div class="team-grid">
-          <div class="team-card">
-            <div class="team-avatar" style="background:var(--poppy);">PN</div>
-            <h4>Priya Nambiar</h4><span>Founder</span>
-          </div>
-          <div class="team-card">
-            <div class="team-avatar" style="background:var(--cobalt);">VT</div>
-            <h4>Vikram Thomas</h4><span>Operations</span>
-          </div>
-          <div class="team-card">
-            <div class="team-avatar" style="background:var(--teal);">LM</div>
-            <h4>Leela Menon</h4><span>Artist Liaison</span>
-          </div>
-          <div class="team-card">
-            <div class="team-avatar" style="background:var(--marigold);">SK</div>
-            <h4>Sahil Kapoor</h4><span>Partnerships</span>
-          </div>
+          <div class="team-card"><div class="team-avatar" style="background:var(--poppy);">PN</div><h4>Priya Nambiar</h4><span>Founder</span></div>
+          <div class="team-card"><div class="team-avatar" style="background:var(--cobalt);">VT</div><h4>Vikram Thomas</h4><span>Operations</span></div>
+          <div class="team-card"><div class="team-avatar" style="background:var(--teal);">LM</div><h4>Leela Menon</h4><span>Artist Liaison</span></div>
+          <div class="team-card"><div class="team-avatar" style="background:var(--marigold);">SK</div><h4>Sahil Kapoor</h4><span>Partnerships</span></div>
         </div>
       </div>
     </div>
@@ -684,7 +301,7 @@
             <textarea id="vMsg" placeholder="What you do, and how much time you can give"></textarea>
           </div>
           <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Send my details</button>
-          <p class="form-note">This prototype form doesn't submit anywhere yet — connect it to Google Forms or a spreadsheet when it goes live.</p>
+          <p class="form-note">Submits directly to Supabase — check the volunteers table in your dashboard.</p>
         </form>
         <div class="success-box" id="successBox">
           <div class="check">✓</div>
@@ -719,72 +336,19 @@
     <div class="footer-grid">
       <div class="logo" style="color:var(--paper);"><span class="logo-dab"></span>Artisan Impact</div>
       <div class="footer-cols">
-        <div>
-          <h5>Explore</h5>
-          <a href="#shop">Shop</a>
-          <a href="#stories">Art Diaries</a>
-          <a href="#mentors">Mentors</a>
-        </div>
-        <div>
-          <h5>Get Involved</h5>
-          <a href="#donate">Donate</a>
-          <a href="#volunteer">Volunteer</a>
-          <a href="#partners">Partner with us</a>
-        </div>
-        <div>
-          <h5>About</h5>
-          <a href="#about">Our story</a>
-          <a href="#about">The team</a>
-        </div>
+        <div><h5>Explore</h5><a href="#shop">Shop</a><a href="#stories">Art Diaries</a><a href="#mentors">Mentors</a></div>
+        <div><h5>Get Involved</h5><a href="#donate">Donate</a><a href="#volunteer">Volunteer</a><a href="#partners">Partner with us</a></div>
+        <div><h5>About</h5><a href="#about">Our story</a><a href="#about">The team</a></div>
       </div>
     </div>
     <div class="footer-bottom">
       <span>© 2026 Artisan Impact. Every purchase funds an artist.</span>
-      <span>Prototype build — payments, forms, and CMS to be connected.</span>
+      <span>Payments via Razorpay · Data via Supabase</span>
     </div>
   </div>
 </footer>
 
-<script>
-  // Shop filter
-  const chips = document.querySelectorAll('.chip');
-  const cards = document.querySelectorAll('#shopGrid .polaroid');
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const f = chip.dataset.filter;
-      cards.forEach(card => {
-        let show = true;
-        if(f === 'under1000'){ show = Number(card.dataset.price) < 1000; }
-        else if(f !== 'all'){ show = card.dataset.cat === f; }
-        card.style.display = show ? '' : 'none';
-      });
-    });
-  });
-
-  // Add to cart micro-interaction
-  document.querySelectorAll('.add-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if(btn.classList.contains('added')) return;
-      btn.textContent = 'Added ✓';
-      btn.classList.add('added');
-      setTimeout(() => {
-        btn.textContent = 'Add to cart';
-        btn.classList.remove('added');
-      }, 1800);
-    });
-  });
-
-  // Volunteer form (prototype — no backend)
-  const form = document.getElementById('volunteerForm');
-  const successBox = document.getElementById('successBox');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    form.style.display = 'none';
-    successBox.style.display = 'block';
-  });
-</script>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
