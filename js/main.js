@@ -3,6 +3,8 @@ import { renderCartBadge, renderCartDrawer } from './cart.js'
 import { initCheckout } from './checkout.js'
 import { initDonate } from './donate.js'
 import { initVolunteerForm } from './volunteer.js'
+import { loadStories } from './blog.js'
+import { loadTestimonials, initTestimonialForm } from './testimonials.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts()
@@ -10,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initCheckout()
   initDonate()
   initVolunteerForm()
+  loadStories()
+  loadTestimonials()
+  initTestimonialForm()
 
   document.querySelectorAll('.chip').forEach((chip) => {
     chip.addEventListener('click', () => {

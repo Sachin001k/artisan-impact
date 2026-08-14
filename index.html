@@ -18,6 +18,7 @@
       <a href="#stories">Art Diaries</a>
       <a href="#mentors">Mentors</a>
       <a href="#journey">Journey</a>
+      <a href="#testimonials">Reviews</a>
       <a href="#donate">Donate</a>
       <a href="#about">About</a>
       <a href="#volunteer">Volunteer</a>
@@ -108,33 +109,8 @@
       <p>Every month we sit down with one artist and one mentor to tell the story behind the work.</p>
     </div>
 
-    <div class="stories-layout">
-      <div class="feature-card">
-        <div class="tape"></div>
-        <div class="eyebrow">This month's diary</div>
-        <h3>"I paint the sky the colour I want it to be." — Aanya, 11</h3>
-        <p>Aanya joined the program eight months ago, sketching in the margins of her school notebook. Today her monsoon series hangs in our shop — and in the homes of six collectors across the country. This is her diary entry, in her own words.</p>
-        <div style="margin-top:22px;"><a href="#" class="btn btn-ghost">Read the full diary</a></div>
-      </div>
-
-      <div class="mini-list">
-        <div class="mini-story">
-          <div class="mini-thumb" style="background:linear-gradient(135deg,var(--cobalt),#6c86e6);"></div>
-          <div><h4>Rehan's First Kiln Fire</h4><span>March · Art Diaries</span></div>
-        </div>
-        <div class="mini-story">
-          <div class="mini-thumb" style="background:linear-gradient(135deg,var(--teal),#4fb5a3);"></div>
-          <div><h4>Meher on Why She Draws Kites</h4><span>February · Art Diaries</span></div>
-        </div>
-        <div class="mini-story">
-          <div class="mini-thumb" style="background:linear-gradient(135deg,#8a5cd6,#c390f0);"></div>
-          <div><h4>Dev and the Loom His Grandfather Left</h4><span>January · Art Diaries</span></div>
-        </div>
-        <div class="mini-story">
-          <div class="mini-thumb" style="background:linear-gradient(135deg,var(--marigold),#f2c06e);"></div>
-          <div><h4>Simran's Garden, Painted from Memory</h4><span>December · Art Diaries</span></div>
-        </div>
-      </div>
+    <div class="stories-layout" id="storiesLayout">
+      <p>Loading Art Diaries…</p>
     </div>
   </div>
 </section>
@@ -208,13 +184,53 @@
       <div class="journey-card">
         <div class="ba-row">
           <div class="ba-cell" style="background:#c9c2ae;">Before · loom warp</div>
-          <div class="ba-cell" style="background:linear-gradient(135deg,#8a5cd6,#c390f0);">After · wall hanging</div>
+          <div class="ba-cell" style="background:linear-gradient(135deg,var(--violet),#c390f0);">After · wall hanging</div>
         </div>
         <div class="journey-body">
           <h4>Woven Wall Hanging — Dev</h4>
           <a href="#" class="play-link"><span class="play-dot">▶</span> Watch the journey</a>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" style="background:#fff;">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">In their words</div>
+      <h2>What collectors & families say</h2>
+      <p>Feedback from people who've bought a piece, donated, or brought their kids to a studio Saturday.</p>
+    </div>
+
+    <div class="testimonial-grid" id="testimonialGrid">
+      <p>Loading reviews…</p>
+    </div>
+
+    <div class="testimonial-form-shell">
+      <h4>Share your experience</h4>
+      <form id="testimonialForm">
+        <div class="field-row">
+          <div><label for="tName">Your name</label><input id="tName" required placeholder="Your name"></div>
+          <div>
+            <label for="tRating">Rating</label>
+            <select id="tRating" required>
+              <option value="5">★★★★★ Excellent</option>
+              <option value="4">★★★★ Good</option>
+              <option value="3">★★★ Okay</option>
+              <option value="2">★★ Not great</option>
+              <option value="1">★ Poor</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="tQuote">Your review</label>
+          <textarea id="tQuote" required placeholder="Tell us about your order, the artwork, or your studio visit"></textarea>
+        </div>
+        <button type="submit" class="btn btn-dark" style="align-self:flex-start;">Submit review</button>
+        <p class="form-note" id="testimonialNote">Reviews are checked before they go live, so yours may take a day or two to appear.</p>
+      </form>
     </div>
   </div>
 </section>

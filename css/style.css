@@ -3,11 +3,13 @@
   --paper:#F3EEE0;
   --slate:#212F29;
   --slate-2:#2B3B34;
-  --marigold:#E8A23B;
-  --poppy:#C8432E;
-  --cobalt:#3457D5;
-  --teal:#2F8F7E;
+  --marigold:#FFB020;
+  --poppy:#E63A2E;
+  --cobalt:#2F5FFF;
+  --teal:#12B8A0;
+  --violet:#8B5CF6;
   --line: rgba(27,38,32,0.14);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html{scroll-behavior:smooth;}
@@ -19,6 +21,39 @@ body{
   line-height:1.55;
   overflow-x:hidden;
 }
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:var(--grain);
+  background-size:180px 180px;
+  opacity:0.045;
+  mix-blend-mode:multiply;
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* ---------- COLOR-WASH BACKGROUNDS ---------- */
+/* Soft blurred paint-blob washes behind key sections, so the page reads
+   like a gallery wall rather than flat panels. Content sits above via
+   .wrap{ z-index:1 } so the blobs never interfere with readability. */
+.wrap{ position:relative; z-index:1; }
+#shop::before, #stories::before, #testimonials::before,
+.hero::before, .donate-banner::before, .volunteer-shell::before{
+  content:"";
+  position:absolute;
+  inset:-15% -5%;
+  z-index:0;
+  pointer-events:none;
+  filter:blur(50px);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(230,58,46,0.16), transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(47,95,255,0.14), transparent 42%),
+    radial-gradient(circle at 78% 88%, rgba(18,184,160,0.15), transparent 45%),
+    radial-gradient(circle at 18% 85%, rgba(255,176,32,0.16), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(139,92,246,0.08), transparent 55%);
+}
+.donate-banner > *, .volunteer-shell > *{ position:relative; z-index:1; }
 h1,h2,h3{
   font-family:'Space Grotesk', sans-serif;
   line-height:1.1;
@@ -113,13 +148,19 @@ nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(-
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* ---------- PALETTE STRIP ---------- */
-.palette-strip{ display:flex; height:14px; }
-.palette-strip span{ flex:1; }
-.palette-strip span:nth-child(1){background:var(--poppy);}
-.palette-strip span:nth-child(2){background:var(--marigold);}
-.palette-strip span:nth-child(3){background:var(--teal);}
-.palette-strip span:nth-child(4){background:var(--cobalt);}
-.palette-strip span:nth-child(5){background:var(--ink);}
+/* A smeared brush-stroke divider instead of flat blocks — the 5 spans are
+   kept in markup for structure but painted over by one flowing gradient. */
+.palette-strip{
+  height:20px;
+  background:linear-gradient(90deg, var(--poppy), var(--marigold), var(--teal), var(--cobalt), var(--violet));
+  clip-path:polygon(
+    0% 35%, 8% 65%, 16% 15%, 24% 70%, 32% 20%, 40% 60%, 48% 25%,
+    56% 65%, 64% 15%, 72% 70%, 80% 20%, 88% 60%, 96% 25%, 100% 45%,
+    100% 100%, 0% 100%
+  );
+  box-shadow:0 10px 24px rgba(27,38,32,0.18);
+}
+.palette-strip span{ display:none; }
 
 /* ---------- HERO ---------- */
 .hero{ background:var(--slate); color:var(--paper); padding:150px 0 90px; position:relative; overflow:hidden; }
@@ -135,12 +176,15 @@ nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(-
   transition:transform .18s ease, background .18s ease;
 }
 .btn:hover{ transform:translateY(-2px); }
-.btn-primary{ background:var(--marigold); color:var(--ink); }
-.btn-primary:hover{ background:#f0af4d; }
+.btn-primary{
+  background:linear-gradient(135deg, var(--marigold), var(--poppy)); color:#fff;
+  box-shadow:0 10px 26px rgba(230,58,46,0.32);
+}
+.btn-primary:hover{ box-shadow:0 16px 34px rgba(230,58,46,0.45); }
 .btn-ghost{ border-color:rgba(243,238,224,0.4); color:var(--paper); }
 .btn-ghost:hover{ background:rgba(243,238,224,0.1); }
 .btn-dark{ background:var(--ink); color:var(--paper); }
-.btn-dark:hover{ background:#2c3b32; }
+.btn-dark:hover{ background:#2c3b32; box-shadow:0 12px 26px rgba(47,95,255,0.28); }
 .btn-full{ width:100%; justify-content:center; }
 .btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
 
@@ -158,7 +202,7 @@ nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(-
 @media(max-width:900px){ .collage{ height:300px; margin-top:10px; } }
 
 /* ---------- SECTION SHELL ---------- */
-section{ padding:90px 0; }
+section{ position:relative; overflow:hidden; padding:90px 0; }
 .section-head{ max-width:640px; margin-bottom:50px; }
 .section-head h2{ font-size:clamp(1.8rem,3.6vw,2.6rem); }
 .section-head p{ margin-top:14px; color:rgba(27,38,32,0.7); font-size:1.02rem; }
@@ -178,10 +222,21 @@ section{ padding:90px 0; }
 .polaroid:nth-child(odd){ transform:rotate(-1.4deg); }
 .polaroid:nth-child(even){ transform:rotate(1.4deg); }
 .polaroid:hover{ transform:rotate(0) translateY(-6px); box-shadow:0 20px 40px rgba(27,38,32,0.2); }
-.art-thumb{ height:170px; border-radius:2px; margin-bottom:14px; }
+.art-thumb{ height:170px; border-radius:2px; margin-bottom:14px; position:relative; overflow:hidden; }
+.art-thumb::after, .swatch::after, .mini-thumb::after, .ba-cell::after{
+  content:"";
+  position:absolute; inset:0;
+  background-image:var(--grain);
+  background-size:120px 120px;
+  opacity:0.16;
+  mix-blend-mode:overlay;
+  border-radius:inherit;
+  pointer-events:none;
+}
 .polaroid h3{ font-size:1.02rem; margin-bottom:2px; }
 .p-meta{ display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
 .p-artist{ font-size:0.82rem; color:rgba(27,38,32,0.6); }
+a.p-artist:hover{ text-decoration:underline; }
 .p-price{ font-family:'IBM Plex Mono', monospace; font-weight:500; font-size:0.92rem; }
 .add-btn{
   margin-top:14px; width:100%; padding:10px; border-radius:6px; border:1px solid var(--ink);
@@ -206,8 +261,9 @@ section{ padding:90px 0; }
 .feature-card p{ color:rgba(243,238,224,0.75); font-size:0.98rem; }
 .tape{ position:absolute; top:-10px; right:36px; width:70px; height:26px; background:rgba(232,162,59,0.85); transform:rotate(4deg); }
 .mini-list{ display:flex; flex-direction:column; gap:18px; }
-.mini-story{ display:flex; gap:16px; align-items:flex-start; padding:16px; border-radius:10px; border:1px solid var(--line); }
-.mini-thumb{ width:56px; height:56px; border-radius:8px; flex-shrink:0; }
+.mini-story{ display:flex; gap:16px; align-items:flex-start; padding:16px; border-radius:10px; border:1px solid var(--line); transition:border-color .18s ease, transform .18s ease; }
+.mini-story:hover{ border-color:var(--ink); transform:translateY(-2px); }
+.mini-thumb{ width:56px; height:56px; border-radius:8px; flex-shrink:0; position:relative; overflow:hidden; }
 .mini-story h4{ font-size:0.95rem; font-weight:600; margin-bottom:3px; }
 .mini-story span{ font-size:0.8rem; color:rgba(27,38,32,0.55); }
 
@@ -234,11 +290,22 @@ section{ padding:90px 0; }
 .ba-cell{
   height:130px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace;
   font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(255,255,255,0.85);
+  position:relative; overflow:hidden;
 }
 .journey-body{ padding:18px 20px; }
 .journey-body h4{ font-size:0.98rem; margin-bottom:4px; }
 .play-link{ display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:0.82rem; font-weight:600; color:var(--poppy); }
 .play-dot{ width:22px; height:22px; border-radius:50%; background:var(--poppy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.6rem; }
+
+/* ---------- TESTIMONIALS ---------- */
+.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:24px; margin-bottom:50px; }
+.testimonial-card{ background:var(--paper); border-radius:14px; padding:26px 24px; border:1px solid var(--line); }
+.testimonial-card .stars{ color:var(--marigold); letter-spacing:2px; margin-bottom:12px; }
+.testimonial-card p{ font-size:0.98rem; color:rgba(27,38,32,0.8); margin-bottom:16px; }
+.testimonial-card .testimonial-name{ font-size:0.82rem; font-weight:600; color:rgba(27,38,32,0.6); }
+.testimonial-form-shell{ max-width:560px; }
+.testimonial-form-shell h4{ font-size:1.1rem; margin-bottom:18px; }
+.testimonial-form-shell .form-note{ color:rgba(27,38,32,0.55); }
 
 /* ---------- DONATE ---------- */
 .donate-banner{ background:var(--ink); color:var(--paper); border-radius:20px; padding:60px 50px; text-align:center; position:relative; overflow:hidden; }
@@ -266,7 +333,7 @@ section{ padding:90px 0; }
 .team-card span{ font-size:0.78rem; color:rgba(27,38,32,0.55); }
 
 /* ---------- VOLUNTEER FORM ---------- */
-.volunteer-shell{ background:var(--slate-2); color:var(--paper); border-radius:20px; padding:50px; display:grid; grid-template-columns:0.9fr 1.1fr; gap:50px; }
+.volunteer-shell{ background:var(--slate-2); color:var(--paper); border-radius:20px; padding:50px; display:grid; grid-template-columns:0.9fr 1.1fr; gap:50px; position:relative; overflow:hidden; }
 @media(max-width:900px){ .volunteer-shell{ grid-template-columns:1fr; padding:34px 26px; } }
 .volunteer-shell .eyebrow{ color:var(--marigold); }
 .volunteer-shell .eyebrow::before{ background:var(--marigold); }

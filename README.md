@@ -6,7 +6,9 @@ Static frontend + Vercel serverless backend + Supabase database + Razorpay payme
 ## Project structure
 
 ```
-index.html            → all page markup
+index.html            → homepage markup (shop, blog, mentors, donate, testimonials, etc.)
+artist.html            → one artist's bio + printable QR code + their products
+post.html               → a single Art Diaries blog entry
 css/style.css          → styling
 js/
   supabaseClient.js     → Supabase connection (fill in your keys)
@@ -16,6 +18,10 @@ js/
   checkout.js             → cart → Razorpay → verify → order confirmed
   donate.js               → custom-amount donation → Razorpay → verify
   volunteer.js            → volunteer form → Supabase insert
+  blog.js                  → loads Art Diaries posts onto the homepage
+  post.js                  → loads a single Art Diaries post (post.html)
+  artist.js                → loads an artist's bio + products + QR code (artist.html)
+  testimonials.js          → loads approved reviews + handles the review form
   main.js                  → wires everything up on page load
 api/
   create-order.js        → Vercel function: creates a Razorpay order (server-side)
@@ -32,12 +38,39 @@ run it through Vercel.
 ## 1. Supabase setup
 
 1. supabase.com → your project → **SQL Editor** → paste in the contents of
-   `sql/schema.sql` → Run. This creates your tables and drops in 6 sample products.
+   `sql/schema.sql` → Run. This creates your tables (`products`, `orders`,
+   `order_items`, `donations`, `volunteers`, `artists`, `posts`, `testimonials`)
+   and seeds 6 sample products, 6 artists, 5 Art Diaries posts, and 2 sample
+   reviews.
 2. Project Settings → API → copy your **Project URL** and **anon public** key.
 3. Paste both into `js/supabaseClient.js` (replace the two placeholder strings).
 4. Project Settings → API → copy the **service_role** key too (different from
    anon — keep this one secret, never put it in any client-side file). You'll
    need it for step 3 below.
+
+### Moderating reviews
+
+New reviews submitted through the "Reviews" section on the homepage are
+inserted with `approved = false`, so they never show up publicly until you
+review them. In Supabase → **Table Editor** → `testimonials`, flip a row's
+`approved` column to `true` to publish it.
+
+### Artist bio pages & QR codes
+
+Each product can link to an `artists` row via `products.artist_id`. When set,
+the artist's name on a product card links to `artist.html?id=<artist_id>`,
+which shows their bio and a QR code (generated on the fly via api.qrserver.com)
+that always points back to that same page — print it on packaging or a shelf
+card. To add a new artist, insert a row into `artists`, then set the matching
+product's `artist_id`.
+
+### Art Diaries blog
+
+The "Art Diaries" section on the homepage and `post.html` both read from the
+`posts` table (`slug`, `title`, `artist_id`, `excerpt`, `content`,
+`gradient_from`/`gradient_to`, `published_at`). Add a new monthly entry by
+inserting a row — the homepage automatically shows the latest as the featured
+diary and the next four underneath.
 
 ## 2. Razorpay setup
 

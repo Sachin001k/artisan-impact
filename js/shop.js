@@ -27,18 +27,21 @@ function renderProducts(products) {
     return
   }
 
-  const palette = ['var(--poppy)', 'var(--cobalt)', 'var(--teal)', 'var(--marigold)', '#8a5cd6']
+  const palette = ['var(--poppy)', 'var(--cobalt)', 'var(--teal)', 'var(--marigold)', 'var(--violet)']
 
   grid.innerHTML = products
     .map((p, i) => {
       const bg = p.image_url
         ? `url(${p.image_url}) center/cover`
         : `linear-gradient(135deg, ${palette[i % palette.length]}, #e0694f)`
+      const artistLabel = p.artist_id
+        ? `<a href="artist.html?id=${p.artist_id}" class="p-artist">by ${p.artist}</a>`
+        : `<span class="p-artist">by ${p.artist}</span>`
       return `
       <div class="polaroid" data-cat="${p.category}" data-price="${p.price_inr}">
         <div class="art-thumb" style="background:${bg};"></div>
         <h3>${p.title}</h3>
-        <div class="p-meta"><span class="p-artist">by ${p.artist}</span><span class="p-price">₹${p.price_inr}</span></div>
+        <div class="p-meta">${artistLabel}<span class="p-price">₹${p.price_inr}</span></div>
         <button class="add-btn" data-id="${p.id}">Add to cart</button>
       </div>
     `
