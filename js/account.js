@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js'
-import { getUser, onAuthChange, initAuthUI, openAuthModal } from './auth.js'
+import { getUser, onAuthChange, initAuthUI, openAuthModal, getInitials } from './auth.js'
 
 const signedOutShell = document.getElementById('accountSignedOut')
 const dashboardShell = document.getElementById('accountDashboard')
@@ -22,7 +22,8 @@ onAuthChange((user) => {
 async function showDashboard(user) {
   signedOutShell.style.display = 'none'
   dashboardShell.style.display = 'block'
-  document.getElementById('accountEmail').textContent = user.email
+  document.getElementById('accountName').textContent = user.user_metadata?.full_name || user.email
+  document.getElementById('accountAvatar').textContent = getInitials(user)
 
   const { data: orders, error: ordersError } = await supabase
     .from('orders')

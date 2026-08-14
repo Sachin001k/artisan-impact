@@ -84,10 +84,20 @@ opens a modal with both "Sign in" and "Create account" tabs; hitting
 "Checkout & pay" while signed out opens the same modal automatically, and
 the shopper just clicks "Checkout & pay" again once they're in.
 
-By default, a new Supabase project requires email confirmation before a
-signed-up account can log in. For faster local testing you can turn this off
-at Supabase → **Authentication → Providers → Email → Confirm email**, or
-just check the confirmation email it sends.
+"Create account" also asks for **full name** and **phone number** (stored in
+Supabase Auth's user metadata — no separate table needed), used to prefill
+Razorpay checkout and to show initials once signed in. Once signed in, the
+nav shows a small avatar with the person's initials (from their name, or the
+first letter of their email if no name is set) instead of the "Sign in"
+button — click it to go to `account.html`.
+
+**If sign-in isn't working right after creating an account**: by default, a
+new Supabase project requires email confirmation before a signed-up account
+can log in — trying to sign in before confirming will show an error like
+"Email not confirmed" in the modal. Either check the confirmation email
+Supabase sent (may land in spam), or turn confirmation off entirely for
+faster testing at Supabase → **Authentication → Providers → Email →
+Confirm email**.
 
 ### Customer "My Account" dashboard
 

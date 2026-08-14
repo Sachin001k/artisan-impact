@@ -18,7 +18,9 @@
       <a href="index.html#stories">Art Diaries</a>
       <a href="index.html#donate">Donate</a>
     </nav>
-    <button class="account-toggle" id="accountToggle">Sign in</button>
+    <div class="account-area" id="accountArea">
+      <button class="account-toggle" id="accountToggle">Sign in</button>
+    </div>
   </div>
 </header>
 
@@ -26,12 +28,23 @@
 <div class="auth-modal" id="authModal">
   <div class="auth-card">
     <button class="cart-close" id="authClose">&times;</button>
+    <h3 id="authHeading">Welcome back</h3>
     <div class="auth-tabs">
       <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
       <button type="button" class="auth-tab" data-tab="signup">Create account</button>
     </div>
     <p class="auth-note" id="authNote">Sign in to your account.</p>
     <form id="authForm">
+      <div class="field-row" id="authSignupFields" style="display:none;">
+        <div>
+          <label for="authName">Full name</label>
+          <input id="authName" type="text" placeholder="Your name">
+        </div>
+        <div>
+          <label for="authPhone">Phone number</label>
+          <input id="authPhone" type="tel" placeholder="10-digit number">
+        </div>
+      </div>
       <div>
         <label for="authEmail">Email</label>
         <input id="authEmail" type="email" required placeholder="you@email.com">
@@ -61,7 +74,10 @@
     <div id="accountDashboard" style="display:none;">
       <div class="section-head">
         <div class="eyebrow">My Account</div>
-        <h2>Hey, <span id="accountEmail"></span></h2>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:4px;">
+          <span class="user-avatar" id="accountAvatar" style="width:56px; height:56px; font-size:1.3rem;"></span>
+          <h2 style="margin:0;">Hey, <span id="accountName"></span></h2>
+        </div>
         <p>Here's your history with Artisan Impact.</p>
       </div>
 

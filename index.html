@@ -26,7 +26,9 @@
       <a href="account.html" id="myAccountLink" style="display:none;">My Account</a>
     </nav>
     <div style="display:flex; align-items:center; gap:10px;">
-      <button class="account-toggle" id="accountToggle">Sign in</button>
+      <div class="account-area" id="accountArea">
+        <button class="account-toggle" id="accountToggle">Sign in</button>
+      </div>
       <button class="cart-toggle" id="cartToggle">
         Cart <span class="cart-count" id="cartCount">0</span>
       </button>
@@ -38,12 +40,23 @@
 <div class="auth-modal" id="authModal">
   <div class="auth-card">
     <button class="cart-close" id="authClose">&times;</button>
+    <h3 id="authHeading">Welcome back</h3>
     <div class="auth-tabs">
       <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
       <button type="button" class="auth-tab" data-tab="signup">Create account</button>
     </div>
     <p class="auth-note" id="authNote">Sign in to your account.</p>
     <form id="authForm">
+      <div class="field-row" id="authSignupFields" style="display:none;">
+        <div>
+          <label for="authName">Full name</label>
+          <input id="authName" type="text" placeholder="Your name">
+        </div>
+        <div>
+          <label for="authPhone">Phone number</label>
+          <input id="authPhone" type="tel" placeholder="10-digit number">
+        </div>
+      </div>
       <div>
         <label for="authEmail">Email</label>
         <input id="authEmail" type="email" required placeholder="you@email.com">

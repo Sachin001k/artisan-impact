@@ -106,6 +106,13 @@ nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(-
 }
 .account-toggle:hover{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
 
+.account-area{ display:flex; align-items:center; gap:10px; }
+.user-avatar{
+  width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg, var(--marigold), var(--poppy)); color:#fff; font-weight:700;
+  font-family:'Space Grotesk',sans-serif; font-size:0.85rem; flex-shrink:0;
+}
+
 /* ---------- AUTH MODAL ---------- */
 .auth-modal{
   position:fixed; inset:0; z-index:250; display:flex; align-items:center; justify-content:center;
@@ -113,10 +120,11 @@ nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(-
 }
 .auth-modal.open{ opacity:1; pointer-events:auto; }
 .auth-card{
-  position:relative; background:#fff; border-radius:16px; padding:34px; width:100%; max-width:380px;
+  position:relative; background:#fff; border-radius:16px; padding:34px; width:100%; max-width:420px;
   margin:0 20px; box-shadow:0 30px 60px rgba(0,0,0,0.3);
 }
 .auth-card .cart-close{ position:absolute; top:18px; right:18px; }
+.auth-card h3{ font-size:1.3rem; margin-bottom:16px; }
 .auth-tabs{ display:flex; gap:8px; margin-bottom:18px; }
 .auth-tab{
   flex:1; padding:9px; border-radius:999px; border:1px solid var(--line); background:none;

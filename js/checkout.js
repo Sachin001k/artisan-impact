@@ -43,7 +43,7 @@ async function handleCheckout() {
     name: 'Artisan Impact',
     description: 'Artwork purchase',
     order_id: order.id,
-    prefill: { email },
+    prefill: { email, name: user.user_metadata?.full_name || '', contact: user.user_metadata?.phone || '' },
     theme: { color: '#C8432E' },
     handler: async function (response) {
       const verifyRes = await fetch('/api/verify-payment', {
