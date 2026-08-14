@@ -1,5 +1,6 @@
 import { getCart, cartTotal, clearCart, renderCartDrawer } from './cart.js'
 import { RAZORPAY_KEY_ID } from './config.js'
+import { getUser, openAuthModal } from './auth.js'
 
 export function initCheckout() {
   document.getElementById('checkoutBtn').addEventListener('click', handleCheckout)
@@ -9,8 +10,12 @@ async function handleCheckout() {
   const cart = getCart()
   if (cart.length === 0) return
 
-  const email = prompt('Email for your order confirmation:')
-  if (!email) return
+  const user = await getUser()
+  if (!user) {
+    openAuthModal('Sign in to complete your purchase — then hit "Checkout & pay" again.')
+    return
+  }
+  const email = user.email
 
   const amountPaise = cartTotal() * 100
 
@@ -50,6 +55,7 @@ async function handleCheckout() {
           razorpay_signature: response.razorpay_signature,
           cart,
           customer_email: email,
+          user_id: user.id,
           type: 'order',
         }),
       })

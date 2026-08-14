@@ -1,0 +1,97 @@
+import { supabase } from './supabaseClient.js'
+import { getUser, onAuthChange, initAuthUI, openAuthModal } from './auth.js'
+
+const signedOutShell = document.getElementById('accountSignedOut')
+const dashboardShell = document.getElementById('accountDashboard')
+
+initAuthUI()
+
+document.getElementById('accountSignInBtn').addEventListener('click', () => {
+  openAuthModal('Sign in to see your stats.')
+})
+
+onAuthChange((user) => {
+  if (user) {
+    showDashboard(user)
+  } else {
+    signedOutShell.style.display = 'block'
+    dashboardShell.style.display = 'none'
+  }
+})
+
+async function showDashboard(user) {
+  signedOutShell.style.display = 'none'
+  dashboardShell.style.display = 'block'
+  document.getElementById('accountEmail').textContent = user.email
+
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (ordersError) {
+    console.error(ordersError)
+    return
+  }
+
+  const paidOrders = (orders || []).filter((o) => o.status === 'paid')
+  const orderIds = paidOrders.map((o) => o.id)
+
+  let itemsByOrder = {}
+  let totalItems = 0
+  if (orderIds.length > 0) {
+    const { data: items, error: itemsError } = await supabase
+      .from('order_items')
+      .select('*, products(title, price_inr)')
+      .in('order_id', orderIds)
+
+    if (itemsError) {
+      console.error(itemsError)
+    } else {
+      totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
+      itemsByOrder = items.reduce((acc, i) => {
+        acc[i.order_id] = acc[i.order_id] || []
+        acc[i.order_id].push(i)
+        return acc
+      }, {})
+    }
+  }
+
+  const totalSpent = paidOrders.reduce((sum, o) => sum + (o.total_inr || 0), 0)
+
+  document.getElementById('accountOrderCount').textContent = paidOrders.length
+  document.getElementById('accountTotalSpent').textContent = `₹${totalSpent}`
+  document.getElementById('accountItemCount').textContent = totalItems
+
+  const list = document.getElementById('accountOrdersList')
+  if (orders.length === 0) {
+    list.innerHTML = '<p>You haven\'t placed an order yet — <a href="index.html#shop" style="text-decoration:underline;">browse the shop</a>.</p>'
+    return
+  }
+
+  list.innerHTML = orders
+    .map((o) => {
+      const items = itemsByOrder[o.id] || []
+      const itemsLabel = items.length
+        ? items.map((i) => `${i.products?.title || 'Item'} × ${i.quantity}`).join(', ')
+        : '—'
+      return `
+      <div class="admin-row">
+        <span>${new Date(o.created_at).toLocaleDateString()}</span>
+        <span>${itemsLabel}</span>
+        <span>₹${o.total_inr}</span>
+        <span class="admin-status admin-status-${o.status}">${o.status}</span>
+      </div>`
+    })
+    .join('')
+}
+
+;(async () => {
+  const user = await getUser()
+  if (user) showDashboard(user)
+  else {
+    signedOutShell.style.display = 'block'
+    dashboardShell.style.display = 'none'
+  }
+})()

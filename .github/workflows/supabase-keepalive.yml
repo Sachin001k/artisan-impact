@@ -1,0 +1,30 @@
+name: Supabase keep-alive
+
+# Supabase pauses free-tier projects after ~7 days with no API activity.
+# This pings the database on a schedule so it never sits idle long enough
+# to pause. It only reads a single row from the public `products` table,
+# so it works with the anon key and never touches private data.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1,4' # every Monday and Thursday at 06:00 UTC
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/products?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "Supabase responded with HTTP $status"
+          if [ "$status" -ge 400 ]; then
+            echo "Ping failed — check the SUPABASE_URL/SUPABASE_ANON_KEY repo secrets."
+            exit 1
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

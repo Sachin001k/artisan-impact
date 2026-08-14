@@ -12,7 +12,7 @@
 
 <header>
   <div class="nav-inner">
-    <div class="logo"><span class="logo-dab"></span>Artisan Impact</div>
+    <a href="index.html" class="logo"><span class="logo-dab"></span>Artisan Impact</a>
     <nav class="pills">
       <a href="#shop">Shop</a>
       <a href="#stories">Art Diaries</a>
@@ -23,12 +23,40 @@
       <a href="#about">About</a>
       <a href="#volunteer">Volunteer</a>
       <a href="#partners">Partners</a>
+      <a href="account.html" id="myAccountLink" style="display:none;">My Account</a>
     </nav>
-    <button class="cart-toggle" id="cartToggle">
-      Cart <span class="cart-count" id="cartCount">0</span>
-    </button>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button class="account-toggle" id="accountToggle">Sign in</button>
+      <button class="cart-toggle" id="cartToggle">
+        Cart <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
   </div>
 </header>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-card">
+    <button class="cart-close" id="authClose">&times;</button>
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
+      <button type="button" class="auth-tab" data-tab="signup">Create account</button>
+    </div>
+    <p class="auth-note" id="authNote">Sign in to your account.</p>
+    <form id="authForm">
+      <div>
+        <label for="authEmail">Email</label>
+        <input id="authEmail" type="email" required placeholder="you@email.com">
+      </div>
+      <div>
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="authSubmit">Sign in</button>
+    </form>
+    <p class="form-note" id="authError" style="color:var(--poppy);"></p>
+  </div>
+</div>
 
 <!-- CART DRAWER -->
 <div class="cart-drawer" id="cartDrawer">

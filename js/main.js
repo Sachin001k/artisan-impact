@@ -5,10 +5,12 @@ import { initDonate } from './donate.js'
 import { initVolunteerForm } from './volunteer.js'
 import { loadStories } from './blog.js'
 import { loadTestimonials, initTestimonialForm } from './testimonials.js'
+import { initAuthUI } from './auth.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts()
   renderCartBadge()
+  initAuthUI()
   initCheckout()
   initDonate()
   initVolunteerForm()

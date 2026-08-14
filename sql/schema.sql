@@ -14,10 +14,13 @@ create table if not exists orders (
   id uuid primary key default gen_random_uuid(),
   razorpay_order_id text,
   customer_email text,
+  user_id uuid references auth.users(id),
   total_inr int,
   status text default 'pending', -- 'pending' | 'paid' | 'failed'
   created_at timestamptz default now()
 );
+
+alter table orders add column if not exists user_id uuid references auth.users(id);
 
 create table if not exists order_items (
   id uuid primary key default gen_random_uuid(),
@@ -176,3 +179,84 @@ insert into testimonials (id, customer_name, quote, rating, approved) values
   ('7e500000-0000-0000-0000-000000000001', 'Nikhil R.', 'The Monsoon in Marigold print is the first thing people notice when they walk into our living room. Knowing it funded a child''s next set of paints makes it mean even more.', 5, true),
   ('7e500000-0000-0000-0000-000000000002', 'Farah S.', 'Ordered two pieces for a housewarming gift — arrived well packed, and the little bio card about the artist was a lovely touch.', 5, true)
 on conflict (id) do nothing;
+
+-- ============================================================
+-- CART_EVENTS — a lightweight "added to cart" log, so the admin
+-- dashboard can see interest even when it doesn't convert to a sale.
+-- ============================================================
+create table if not exists cart_events (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid references products(id),
+  created_at timestamptz default now()
+);
+
+alter table cart_events enable row level security;
+drop policy if exists "public insert cart_events" on cart_events;
+create policy "public insert cart_events" on cart_events for insert with check (true);
+
+-- ============================================================
+-- ADMINS — emails allowed to see the admin dashboard
+-- (Settings → sql/schema.sql). Add more any time with:
+--   insert into admins (email) values ('someone@example.com');
+-- ============================================================
+create table if not exists admins (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null
+);
+
+insert into admins (email) values ('admin@gmail.com') on conflict (email) do nothing;
+
+-- Runs with the privileges of whoever created it (not the caller), so it can
+-- check the admins table even though admins itself has no public read policy.
+-- Supabase auto-exposes this as an RPC: supabase.rpc('is_admin').
+create or replace function is_admin() returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from admins where email = auth.jwt() ->> 'email'
+  );
+$$;
+
+alter table admins enable row level security;
+-- Intentionally no select/insert policies here — admins is only ever read
+-- from inside is_admin() above, never queried directly by clients.
+
+-- Give the admin dashboard read access to the tables that were previously
+-- server-only (orders/donations/volunteers) or approved-only (testimonials),
+-- plus the ability to approve pending testimonials.
+drop policy if exists "admin read orders" on orders;
+create policy "admin read orders" on orders for select using (is_admin());
+
+drop policy if exists "admin read order_items" on order_items;
+create policy "admin read order_items" on order_items for select using (is_admin());
+
+drop policy if exists "admin read donations" on donations;
+create policy "admin read donations" on donations for select using (is_admin());
+
+drop policy if exists "admin read volunteers" on volunteers;
+create policy "admin read volunteers" on volunteers for select using (is_admin());
+
+drop policy if exists "admin read testimonials" on testimonials;
+create policy "admin read testimonials" on testimonials for select using (is_admin());
+
+drop policy if exists "admin update testimonials" on testimonials;
+create policy "admin update testimonials" on testimonials for update using (is_admin()) with check (is_admin());
+
+drop policy if exists "admin read cart_events" on cart_events;
+create policy "admin read cart_events" on cart_events for select using (is_admin());
+
+-- ============================================================
+-- CUSTOMER "MY ACCOUNT" ACCESS — a signed-in shopper can read
+-- their own orders (and the line items inside them), for the
+-- personal stats dashboard at account.html.
+-- ============================================================
+drop policy if exists "own orders" on orders;
+create policy "own orders" on orders for select using (auth.uid() = user_id);
+
+drop policy if exists "own order_items" on order_items;
+create policy "own order_items" on order_items for select using (
+  exists (select 1 from orders o where o.id = order_items.order_id and o.user_id = auth.uid())
+);

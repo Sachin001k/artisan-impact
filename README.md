@@ -9,24 +9,28 @@ Static frontend + Vercel serverless backend + Supabase database + Razorpay payme
 index.html            → homepage markup (shop, blog, mentors, donate, testimonials, etc.)
 artist.html            → one artist's bio + printable QR code + their products
 post.html               → a single Art Diaries blog entry
+admin.html              → password-protected dashboard (orders, donations, reviews, etc.)
 css/style.css          → styling
 js/
   supabaseClient.js     → Supabase connection (fill in your keys)
   config.js              → Razorpay public key (fill in)
-  cart.js                 → cart state (localStorage)
+  cart.js                 → cart state (localStorage) + logs "added to cart" events
   shop.js                 → loads products from Supabase, renders grid + filters
-  checkout.js             → cart → Razorpay → verify → order confirmed
-  donate.js               → custom-amount donation → Razorpay → verify
+  auth.js                 → Supabase Auth: sign in/up/out + the sign-in modal
+  checkout.js             → requires sign-in → cart → Razorpay → verify → order confirmed
+  donate.js               → custom-amount donation → Razorpay → verify (no sign-in required)
   volunteer.js            → volunteer form → Supabase insert
   blog.js                  → loads Art Diaries posts onto the homepage
   post.js                  → loads a single Art Diaries post (post.html)
   artist.js                → loads an artist's bio + products + QR code (artist.html)
   testimonials.js          → loads approved reviews + handles the review form
+  admin.js                 → admin login + dashboard data (admin.html)
   main.js                  → wires everything up on page load
 api/
   create-order.js        → Vercel function: creates a Razorpay order (server-side)
   verify-payment.js       → Vercel function: verifies payment + writes to Supabase
 sql/schema.sql          → run this once in Supabase to create your tables
+.github/workflows/supabase-keepalive.yml → pings Supabase so it doesn't pause
 ```
 
 The `api/` folder only works when served through Vercel (locally via `vercel dev`,
@@ -71,6 +75,45 @@ The "Art Diaries" section on the homepage and `post.html` both read from the
 `gradient_from`/`gradient_to`, `published_at`). Add a new monthly entry by
 inserting a row — the homepage automatically shows the latest as the featured
 diary and the next four underneath.
+
+### Customer sign-in before checkout
+
+Buyers must be signed in (via Supabase Auth, email + password) to complete
+a purchase — donations stay guest-friendly. The "Sign in" button in the nav
+opens a modal with both "Sign in" and "Create account" tabs; hitting
+"Checkout & pay" while signed out opens the same modal automatically, and
+the shopper just clicks "Checkout & pay" again once they're in.
+
+By default, a new Supabase project requires email confirmation before a
+signed-up account can log in. For faster local testing you can turn this off
+at Supabase → **Authentication → Providers → Email → Confirm email**, or
+just check the confirmation email it sends.
+
+### Customer "My Account" dashboard
+
+Once someone is signed in, a **My Account** link appears in the nav (also at
+`account.html` directly), showing their own order count, total spent, and
+order history — pulled live from Supabase, restricted to their own rows by
+RLS (`orders`/`order_items` policies check `user_id = auth.uid()`). This is
+separate from the site-wide `admin.html` dashboard.
+
+### Admin dashboard
+
+`admin.html` shows paid orders, revenue, donations, volunteer signups,
+"added to cart" activity by product, and reviews (with an Approve button for
+pending ones) — all read live from Supabase.
+
+Only emails listed in the `admins` table (seeded in `schema.sql` with
+`admin@gmail.com`) can see the dashboard; everyone else who signs in there
+gets "This account doesn't have admin access." To use it:
+
+1. Open `admin.html`, use the **Create account** tab to sign up with
+   `admin@gmail.com` (or whichever email you seeded into `admins`) and a
+   password. Confirm the email if your project requires it.
+2. Sign in — you should land on the dashboard.
+3. To add more admins later, no code changes needed: Supabase → **Table
+   Editor** → `admins` → insert a row with the new email (they still need to
+   create their own account with that email via the same Create account tab).
 
 ## 2. Razorpay setup
 
@@ -122,11 +165,13 @@ will work exactly like they will in production.
 
 Test the flow:
 1. Add a couple of products to cart → open the cart drawer → Checkout & pay
-2. Razorpay's test checkout opens — use their test card `4111 1111 1111 1111`,
+2. If you're not signed in, the sign-in modal opens instead — create an
+   account (or sign in), then click Checkout & pay again
+3. Razorpay's test checkout opens — use their test card `4111 1111 1111 1111`,
    any future expiry, any CVV, any name
-3. On success you should see the confirmation toast, and a new row in your
+4. On success you should see the confirmation toast, and a new row in your
    Supabase `orders` and `order_items` tables
-4. Try the donate form and the volunteer form the same way
+5. Try the donate form and the volunteer form the same way (no sign-in needed)
 
 If you just want to eyeball the design without testing payments, `npx serve .`
 also works, but the checkout/donate buttons won't complete without `vercel dev`
@@ -152,6 +197,21 @@ Redeploy after adding them if the first deploy happens before you've set them.
 
 Your live site will be at `your-project.vercel.app` (or a custom domain if you
 add one later).
+
+## Keeping Supabase from pausing
+
+Supabase's free tier pauses a project after about a week with no API
+activity. `.github/workflows/supabase-keepalive.yml` pings it twice a week
+automatically via GitHub Actions, so this only matters if you want it running
+sooner or want to double check it's wired up:
+
+1. On GitHub → this repo → **Settings → Secrets and variables → Actions → New
+   repository secret**, add:
+   - `SUPABASE_URL` — same Project URL as everywhere else
+   - `SUPABASE_ANON_KEY` — same anon key as `js/supabaseClient.js`
+2. That's it — the workflow runs every Monday and Thursday. You can also
+   trigger it manually from the **Actions** tab → "Supabase keep-alive" →
+   **Run workflow**, to confirm it's working right after setup.
 
 ## Going live for real (not just testing)
 

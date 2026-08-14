@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient.js'
+
 const CART_KEY = 'ai_cart'
 
 export function getCart() {
@@ -18,6 +20,10 @@ export function addToCart(product) {
     cart.push({ ...product, quantity: 1 })
   }
   saveCart(cart)
+  supabase
+    .from('cart_events')
+    .insert({ product_id: product.id })
+    .then(({ error }) => error && console.error(error))
 }
 
 export function removeFromCart(id) {

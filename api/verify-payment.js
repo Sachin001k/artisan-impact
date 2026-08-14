@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     cart,
     amount,
     customer_email,
+    user_id,
     type, // 'order' | 'donation'
   } = req.body
 
@@ -50,6 +51,7 @@ export default async function handler(req, res) {
       .insert({
         razorpay_order_id,
         customer_email,
+        user_id: user_id || null,
         total_inr: total,
         status: 'paid',
       })
