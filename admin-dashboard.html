@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Artisan Impact</title>
+<link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin-dashboard.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="dashboard-container">
+  <!-- SIDEBAR -->
+  <aside class="dashboard-sidebar" id="dashboardSidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
+        <img src="images/logo.jpeg" alt="Artisan Impact">
+        <span>Artisan Impact</span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Dashboard</div>
+        <a href="#" class="nav-item active" data-section="overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Overview</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Operations</div>
+        <a href="#" class="nav-item" data-section="orders">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Orders</span>
+        </a>
+        <a href="#" class="nav-item" data-section="products">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-text">Products</span>
+        </a>
+        <a href="#" class="nav-item" data-section="customers">
+          <span class="nav-icon">👥</span>
+          <span class="nav-text">Customers</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Community</div>
+        <a href="#" class="nav-item" data-section="artisans">
+          <span class="nav-icon">🎭</span>
+          <span class="nav-text">Artisans</span>
+        </a>
+        <a href="#" class="nav-item" data-section="donations">
+          <span class="nav-icon">❤️</span>
+          <span class="nav-text">Donations</span>
+        </a>
+        <a href="#" class="nav-item" data-section="volunteers">
+          <span class="nav-icon">🤝</span>
+          <span class="nav-text">Volunteers</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Management</div>
+        <a href="#" class="nav-item" data-section="reviews">
+          <span class="nav-icon">⭐</span>
+          <span class="nav-text">Reviews</span>
+        </a>
+        <a href="#" class="nav-item" data-section="content">
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Content</span>
+        </a>
+        <a href="#" class="nav-item" data-section="analytics">
+          <span class="nav-icon">📈</span>
+          <span class="nav-text">Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-section="notifications">
+          <span class="nav-icon">🔔</span>
+          <span class="nav-text">Notifications</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Admin</div>
+        <a href="#" class="nav-item" data-section="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Settings</span>
+        </a>
+        <a href="#" class="nav-item" data-section="audit">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Audit Log</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item logout-btn" id="logoutBtn">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-text">Sign out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- SIDEBAR TOGGLE (Mobile) -->
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
+
+  <!-- MAIN CONTENT -->
+  <main class="dashboard-main">
+    <!-- TOP BAR -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1 id="pageTitle">Overview</h1>
+      </div>
+      <div class="header-right">
+        <input type="text" class="header-search" id="globalSearch" placeholder="Search orders, products, customers...">
+        <div class="header-user">
+          <span id="adminEmail" class="admin-email"></span>
+          <button class="admin-avatar" id="adminMenu">👤</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <div class="dashboard-content">
+      <!-- OVERVIEW SECTION -->
+      <section id="overviewSection" class="page-section active">
+        <div class="page-header">
+          <div>
+            <h2>Dashboard Overview</h2>
+            <p>Monitor your business metrics and recent activity</p>
+          </div>
+          <div class="header-actions">
+            <input type="date" id="dateFrom" class="date-input">
+            <span class="text-muted">to</span>
+            <input type="date" id="dateTo" class="date-input">
+            <button class="btn btn-dark" id="filterBtn">Filter</button>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+          <div class="kpi-card" data-navigate="orders">
+            <div class="kpi-header">
+              <span class="kpi-icon">📦</span>
+              <span class="kpi-label">Paid Orders</span>
+            </div>
+            <div class="kpi-value" id="kpiOrders">—</div>
+            <div class="kpi-meta" id="kpiOrdersMeta">Loading...</div>
+          </div>
+
+          <div class="kpi-card" data-navigate="orders">
+            <div class="kpi-header">
+              <span class="kpi-icon">💰</span>
+              <span class="kpi-label">Revenue</span>
+            </div>
+            <div class="kpi-value" id="kpiRevenue">—</div>
+            <div class="kpi-meta" id="kpiRevenueMeta">Loading...</div>
+          </div>
+
+          <div class="kpi-card" data-navigate="donations">
+            <div class="kpi-header">
+              <span class="kpi-icon">❤️</span>
+              <span class="kpi-label">Donations</span>
+            </div>
+            <div class="kpi-value" id="kpiDonations">—</div>
+            <div class="kpi-meta" id="kpiDonationsMeta">Loading...</div>
+          </div>
+
+          <div class="kpi-card" data-navigate="volunteers">
+            <div class="kpi-header">
+              <span class="kpi-icon">🤝</span>
+              <span class="kpi-label">Volunteer Signups</span>
+            </div>
+            <div class="kpi-value" id="kpiVolunteers">—</div>
+            <div class="kpi-meta" id="kpiVolunteersMeta">Loading...</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-icon">🛒</span>
+              <span class="kpi-label">Cart Adds</span>
+            </div>
+            <div class="kpi-value" id="kpiCartAdds">—</div>
+            <div class="kpi-meta" id="kpiCartAddsMeta">Loading...</div>
+          </div>
+
+          <div class="kpi-card" data-navigate="reviews">
+            <div class="kpi-header">
+              <span class="kpi-icon">⭐</span>
+              <span class="kpi-label">Reviews to Approve</span>
+            </div>
+            <div class="kpi-value" id="kpiReviews">—</div>
+            <div class="kpi-meta" id="kpiReviewsMeta">Loading...</div>
+          </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Revenue Trend</h3>
+              <span class="chart-period">Last 30 days</span>
+            </div>
+            <canvas id="revenueChart" height="300"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Orders Trend</h3>
+              <span class="chart-period">Last 30 days</span>
+            </div>
+            <canvas id="ordersChart" height="300"></canvas>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions">
+          <h3>Quick Actions</h3>
+          <div class="actions-grid">
+            <a href="/admin/products" class="action-btn">
+              <span class="action-icon">➕</span>
+              <span class="action-text">Add Product</span>
+            </a>
+            <button class="action-btn" id="newOrderBtn">
+              <span class="action-icon">📝</span>
+              <span class="action-text">New Order</span>
+            </button>
+            <button class="action-btn" id="newVolunteerBtn">
+              <span class="action-icon">👤</span>
+              <span class="action-text">Register Volunteer</span>
+            </button>
+            <button class="action-btn" id="viewReportsBtn">
+              <span class="action-icon">📊</span>
+              <span class="action-text">View Reports</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY -->
+        <div class="activity-sections">
+          <div class="activity-card">
+            <h3>Recent Orders</h3>
+            <div id="recentOrdersList"></div>
+          </div>
+
+          <div class="activity-card">
+            <h3>Recent Donations</h3>
+            <div id="recentDonationsList"></div>
+          </div>
+
+          <div class="activity-card">
+            <h3>Reviews Awaiting Approval</h3>
+            <div id="reviewsQueueList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- OTHER SECTIONS (Placeholders) -->
+      <section id="ordersSection" class="page-section">
+        <div class="page-header">
+          <h2>Orders</h2>
+          <p>Manage all orders and payments</p>
+        </div>
+        <div class="placeholder">Orders page coming soon...</div>
+      </section>
+
+      <section id="productsSection" class="page-section">
+        <div class="page-header">
+          <h2>Products</h2>
+          <p>Manage artwork and inventory</p>
+        </div>
+        <div class="placeholder">Products page coming soon...</div>
+      </section>
+
+      <section id="customersSection" class="page-section">
+        <div class="page-header">
+          <h2>Customers</h2>
+          <p>Customer directory and profiles</p>
+        </div>
+        <div class="placeholder">Customers page coming soon...</div>
+      </section>
+
+      <section id="artisansSection" class="page-section">
+        <div class="page-header">
+          <h2>Artisans</h2>
+          <p>Manage artisan profiles and verification</p>
+        </div>
+        <div class="placeholder">Artisans page coming soon...</div>
+      </section>
+
+      <section id="donationsSection" class="page-section">
+        <div class="page-header">
+          <h2>Donations</h2>
+          <p>Monitor donations and campaigns</p>
+        </div>
+        <div class="placeholder">Donations page coming soon...</div>
+      </section>
+
+      <section id="volunteersSection" class="page-section">
+        <div class="page-header">
+          <h2>Volunteers</h2>
+          <p>Manage volunteer applications and hours</p>
+        </div>
+        <div class="placeholder">Volunteers page coming soon...</div>
+      </section>
+
+      <section id="reviewsSection" class="page-section">
+        <div class="page-header">
+          <h2>Reviews</h2>
+          <p>Moderate customer reviews</p>
+        </div>
+        <div class="placeholder">Reviews page coming soon...</div>
+      </section>
+
+      <section id="contentSection" class="page-section">
+        <div class="page-header">
+          <h2>Content</h2>
+          <p>Manage website content</p>
+        </div>
+        <div class="placeholder">Content page coming soon...</div>
+      </section>
+
+      <section id="analyticsSection" class="page-section">
+        <div class="page-header">
+          <h2>Analytics</h2>
+          <p>Detailed business analytics</p>
+        </div>
+        <div class="placeholder">Analytics page coming soon...</div>
+      </section>
+
+      <section id="notificationsSection" class="page-section">
+        <div class="page-header">
+          <h2>Notifications</h2>
+          <p>Manage alerts and communications</p>
+        </div>
+        <div class="placeholder">Notifications page coming soon...</div>
+      </section>
+
+      <section id="settingsSection" class="page-section">
+        <div class="page-header">
+          <h2>Settings</h2>
+          <p>Admin settings and configuration</p>
+        </div>
+        <div class="placeholder">Settings page coming soon...</div>
+      </section>
+
+      <section id="auditSection" class="page-section">
+        <div class="page-header">
+          <h2>Audit Log</h2>
+          <p>Track all admin actions</p>
+        </div>
+        <div class="placeholder">Audit log page coming soon...</div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="js/admin-dashboard.js"></script>
+</body>
+</html>
