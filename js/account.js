@@ -106,23 +106,41 @@ async function showDashboard(user) {
   document.getElementById('accountItemCount').textContent = totalItems
 
   const list = document.getElementById('accountOrdersList')
-  if (orders.length === 0) {
-    list.innerHTML = '<p>You haven\'t placed an order yet — <a href="index.html#shop" style="text-decoration:underline;">browse the shop</a>.</p>'
+  const noOrders = document.getElementById('noOrders')
+
+  if (paidOrders.length === 0) {
+    list.style.display = 'none'
+    noOrders.style.display = 'block'
     return
   }
 
-  list.innerHTML = orders
+  noOrders.style.display = 'none'
+  list.style.display = 'block'
+  list.innerHTML = paidOrders
     .map((o) => {
       const items = itemsByOrder[o.id] || []
-      const itemsLabel = items.length
-        ? items.map((i) => `${i.products?.title || 'Item'} × ${i.quantity}`).join(', ')
-        : '—'
+      const orderDate = new Date(o.created_at)
+      const dateStr = orderDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
       return `
-      <div class="admin-row">
-        <span>${new Date(o.created_at).toLocaleDateString()}</span>
-        <span>${itemsLabel}</span>
-        <span>₹${o.total_inr}</span>
-        <span class="admin-status admin-status-${o.status}">${o.status}</span>
+      <div class="order-item">
+        <div class="order-header">
+          <div>
+            <div class="order-id">Order #${o.id.slice(0, 8)}</div>
+            <div class="order-date">${dateStr}</div>
+          </div>
+          <span class="order-status paid">Paid</span>
+        </div>
+        <div class="order-items">
+          ${items.map((i) => `
+            <div class="order-item-detail">
+              <strong>${i.products?.title || 'Item'}</strong> × ${i.quantity}
+            </div>
+          `).join('')}
+        </div>
+        <div class="order-footer">
+          <span></span>
+          <div class="order-total">Total: <strong>₹${o.total_inr}</strong></div>
+        </div>
       </div>`
     })
     .join('')

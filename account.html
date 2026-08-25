@@ -109,25 +109,45 @@
       <button class="btn btn-primary" id="accountSignInBtn">Sign in</button>
     </div>
 
-    <div id="accountDashboard" style="display:none;">
-      <div class="section-head">
-        <div class="eyebrow">My Account</div>
-        <div style="display:flex; align-items:center; gap:16px; margin-bottom:4px;">
-          <span class="user-avatar" id="accountAvatar" style="width:56px; height:56px; font-size:1.3rem;"></span>
-          <h2 style="margin:0;">Hey, <span id="accountName"></span></h2>
+    <div id="accountDashboard" style="display:none;" class="profile-dashboard">
+      <!-- PROFILE HEADER -->
+      <div class="profile-header">
+        <div class="profile-card">
+          <div class="profile-avatar" id="accountAvatar"></div>
+          <div class="profile-info">
+            <h2 id="accountName"></h2>
+            <p class="profile-label">Artisan Impact Member</p>
+          </div>
         </div>
-        <p>Here's your history with Artisan Impact.</p>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat-tile"><span id="accountOrderCount">–</span><label>Orders placed</label></div>
-        <div class="stat-tile"><span id="accountTotalSpent">–</span><label>Total spent</label></div>
-        <div class="stat-tile"><span id="accountItemCount">–</span><label>Pieces bought</label></div>
+      <!-- STATS -->
+      <div class="profile-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="accountOrderCount">–</div>
+          <div class="stat-label">Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="accountTotalSpent">–</div>
+          <div class="stat-label">Total spent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="accountItemCount">–</div>
+          <div class="stat-label">Pieces bought</div>
+        </div>
       </div>
 
-      <div class="admin-section">
-        <h4>Your orders</h4>
-        <div id="accountOrdersList"></div>
+      <!-- ORDERS SECTION -->
+      <div class="orders-section">
+        <div class="section-title">
+          <h3>Order History</h3>
+          <p>Your purchases and transactions</p>
+        </div>
+        <div id="accountOrdersList" class="orders-list"></div>
+        <div id="noOrders" style="text-align:center; padding:40px 20px; color:rgba(27,38,32,0.6);">
+          <p style="font-size:0.95rem;">You haven't placed an order yet</p>
+          <a href="/#shop" style="color:var(--cobalt); font-weight:600; text-decoration:none;">Browse the shop</a>
+        </div>
       </div>
     </div>
 
