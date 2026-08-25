@@ -39,9 +39,14 @@
 <header>
   <div class="nav-inner">
     <a href="index.html" class="logo"><img src="images/logo.jpeg" alt="Artisan Impact" style="height:32px; width:auto;"></a>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <span id="adminUser" style="font-size:0.85rem;"></span>
-      <button id="logoutBtn" class="btn btn-ghost" style="border-color:var(--ink); color:var(--ink);">Sign out</button>
+    <span id="adminUser" style="font-size:0.85rem; flex:1; text-align:center;"></span>
+    <nav class="pills">
+      <button class="menu-toggle" id="menuToggle" aria-label="More menu">⋯</button>
+    </nav>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <a href="admin.html">Dashboard</a>
+      <a href="index.html">Back to home</a>
+      <a href="#" id="logoutBtn" style="cursor:pointer;">Sign out</a>
     </div>
   </div>
 </header>

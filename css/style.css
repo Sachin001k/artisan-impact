@@ -100,6 +100,31 @@ nav.pills a{
 nav.pills a:hover{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
 @media(max-width:920px){ nav.pills{ display:none; } }
 
+.menu-toggle{
+  background:none; border:none; font-size:1.5rem; cursor:pointer; padding:0 8px;
+  color:var(--ink); display:none; transition:all .2s ease;
+}
+.menu-toggle:hover{ opacity:0.65; }
+
+.dropdown-menu{
+  position:absolute; top:100%; right:0; background:#fff; border:1px solid var(--line);
+  border-radius:12px; min-width:200px; box-shadow:0 8px 20px rgba(0,0,0,0.1);
+  display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:all .25s ease;
+  transform:translateY(-6px); z-index:99; margin-top:2px;
+}
+.dropdown-menu.open{ opacity:1; pointer-events:auto; transform:translateY(0); }
+.dropdown-menu a{
+  padding:12px 20px; border-bottom:1px solid var(--line); font-size:0.88rem;
+  transition:all .15s ease;
+}
+.dropdown-menu a:last-child{ border-bottom:none; }
+.dropdown-menu a:hover{ background:var(--paper); color:var(--cobalt); }
+
+@media(max-width:920px){
+  .menu-toggle{ display:block; }
+  nav.pills{ position:relative; }
+}
+
 .account-toggle{
   border:1px solid var(--line); border-radius:999px; padding:8px 16px;
   background:none; cursor:pointer; font-weight:600; font-size:0.85rem; white-space:nowrap;

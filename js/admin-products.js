@@ -10,6 +10,26 @@ const addBtn = document.getElementById('addProductBtn')
 const cancelBtn = document.getElementById('cancelBtn')
 const logoutBtn = document.getElementById('logoutBtn')
 
+// Dropdown menu toggle
+const menuToggle = document.getElementById('menuToggle')
+const dropdownMenu = document.getElementById('dropdownMenu')
+if (menuToggle) {
+  menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation()
+    dropdownMenu.classList.toggle('open')
+  })
+  dropdownMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      dropdownMenu.classList.remove('open')
+    })
+  })
+  document.addEventListener('click', (e) => {
+    if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+      dropdownMenu.classList.remove('open')
+    }
+  })
+}
+
 async function checkAdmin() {
   const user = await getUser()
   if (!user) {
@@ -23,7 +43,8 @@ async function checkAdmin() {
     return
   }
   document.getElementById('adminUser').textContent = user.email
-  logoutBtn.addEventListener('click', async () => {
+  logoutBtn.addEventListener('click', async (e) => {
+    e.preventDefault()
     await supabase.auth.signOut()
     window.location.href = 'index.html'
   })
