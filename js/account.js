@@ -32,12 +32,32 @@ document.getElementById('accountSignInBtn').addEventListener('click', () => {
 
 onAuthChange((user) => {
   if (user) {
-    showDashboard(user)
+    checkIfAdminAndShow(user)
   } else {
     signedOutShell.style.display = 'block'
     dashboardShell.style.display = 'none'
   }
 })
+
+async function checkIfAdminAndShow(user) {
+  const { data: isAdmin } = await supabase.rpc('is_admin')
+
+  if (isAdmin) {
+    signedOutShell.style.display = 'block'
+    dashboardShell.style.display = 'none'
+    signedOutShell.innerHTML = `
+      <div class="section-head">
+        <div class="eyebrow">Admin Access</div>
+        <h2>You're signed in as admin</h2>
+        <p>Your account is registered as an admin. Go to your admin dashboard to manage the site.</p>
+      </div>
+      <a href="/admin" class="btn btn-dark">Go to Admin Dashboard</a>
+    `
+    return
+  }
+
+  showDashboard(user)
+}
 
 async function showDashboard(user) {
   signedOutShell.style.display = 'none'
