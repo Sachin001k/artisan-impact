@@ -134,6 +134,21 @@ function initEventListeners() {
       await loadOverviewData(from, to)
     }
   })
+
+  // Orders page
+  document.getElementById('orderFilterBtn')?.addEventListener('click', () => {
+    loadOrders()
+  })
+
+  document.getElementById('orderSearch')?.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      loadOrders()
+    }
+  })
+
+  // Modal close
+  document.getElementById('orderModalClose')?.addEventListener('click', closeOrderModal)
+  document.getElementById('orderModalCloseBtn')?.addEventListener('click', closeOrderModal)
 }
 
 // ===== LOAD OVERVIEW DATA =====
@@ -401,5 +416,131 @@ async function loadLoginActivity() {
   }).join('')
 }
 
+// ===== LOAD ORDERS =====
+async function loadOrders() {
+  try {
+    const search = document.getElementById('orderSearch')?.value || ''
+    const status = document.getElementById('orderStatus')?.value || ''
+
+    let query = supabase
+      .from('orders')
+      .select('id, customer_email, user_id, total_inr, status, created_at')
+      .order('created_at', { ascending: false })
+
+    if (status) {
+      query = query.eq('status', status)
+    }
+
+    const { data: orders, error } = await query
+
+    if (error) throw error
+
+    const filtered = orders.filter(o => {
+      if (!search) return true
+      return o.id.includes(search) || (o.customer_email && o.customer_email.includes(search))
+    })
+
+    const tbody = document.getElementById('ordersTableBody')
+    const stats = document.getElementById('ordersStats')
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No orders found</td></tr>'
+      stats.innerHTML = ''
+      return
+    }
+
+    tbody.innerHTML = filtered.map(order => `
+      <tr onclick="openOrderModal('${order.id}')">
+        <td><span class="order-id">#${order.id.slice(0, 8)}</span></td>
+        <td>${order.customer_email || '—'}</td>
+        <td>₹${order.total_inr}</td>
+        <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+        <td>${new Date(order.created_at).toLocaleDateString()}</td>
+        <td><button class="table-action-btn" onclick="event.stopPropagation(); openOrderModal('${order.id}')">View</button></td>
+      </tr>
+    `).join('')
+
+    const paidCount = filtered.filter(o => o.status === 'paid').length
+    const totalRevenue = filtered.filter(o => o.status === 'paid').reduce((sum, o) => sum + (o.total_inr || 0), 0)
+    stats.innerHTML = `Showing ${filtered.length} orders • ${paidCount} paid • ₹${totalRevenue.toLocaleString()} revenue`
+  } catch (error) {
+    console.error('Error loading orders:', error)
+    document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">Error loading orders</td></tr>'
+  }
+}
+
+// ===== OPEN ORDER MODAL =====
+async function openOrderModal(orderId) {
+  const { data: order } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', orderId)
+    .single()
+
+  if (!order) return
+
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('*, products(title, price_inr)')
+    .eq('order_id', orderId)
+
+  const modal = document.getElementById('orderModal')
+  const body = document.getElementById('orderModalBody')
+
+  body.innerHTML = `
+    <div class="order-detail-row">
+      <span class="order-detail-label">Order ID</span>
+      <span class="order-detail-value">${order.id.slice(0, 8)}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Customer Email</span>
+      <span class="order-detail-value">${order.customer_email || '—'}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Status</span>
+      <span class="order-detail-value"><span class="status-badge status-${order.status}">${order.status}</span></span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Total</span>
+      <span class="order-detail-value">₹${order.total_inr}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Date</span>
+      <span class="order-detail-value">${new Date(order.created_at).toLocaleString()}</span>
+    </div>
+    <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--line);">
+      <h4 style="margin:0 0 12px 0;">Items</h4>
+      ${items?.map(item => `
+        <div style="padding:8px 0; border-bottom:1px solid var(--line); font-size:0.9rem;">
+          <div><strong>${item.products?.title || 'Item'}</strong> × ${item.quantity}</div>
+          <div style="color:rgba(27,38,32,0.6);">₹${item.products?.price_inr || 0} each</div>
+        </div>
+      `).join('') || '<p>No items</p>'}
+    </div>
+  `
+
+  modal.classList.add('open')
+}
+
+// ===== CLOSE ORDER MODAL =====
+function closeOrderModal() {
+  document.getElementById('orderModal').classList.remove('open')
+}
+
+// Make functions global
+window.openOrderModal = openOrderModal
+window.closeOrderModal = closeOrderModal
+window.loadOrders = loadOrders
+
 // ===== START =====
-document.addEventListener('DOMContentLoaded', initDashboard)
+document.addEventListener('DOMContentLoaded', async () => {
+  await initDashboard()
+  // Load orders when navigating to orders section
+  const origNavigate = window.navigateToSection
+  window.navigateToSection = function(section) {
+    origNavigate(section)
+    if (section === 'orders') {
+      setTimeout(() => loadOrders(), 100)
+    }
+  }
+})

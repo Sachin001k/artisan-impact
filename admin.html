@@ -269,11 +269,55 @@
       <!-- OTHER SECTIONS (Placeholders) -->
       <section id="ordersSection" class="page-section">
         <div class="page-header">
-          <h2>Orders</h2>
-          <p>Manage all orders and payments</p>
+          <div>
+            <h2>Orders</h2>
+            <p>Manage all orders and payments</p>
+          </div>
+          <div class="header-actions">
+            <input type="text" id="orderSearch" class="search-input" placeholder="Search by Order ID or email...">
+            <select id="orderStatus" class="filter-select">
+              <option value="">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+            <button class="btn btn-dark" id="orderFilterBtn">Filter</button>
+          </div>
         </div>
-        <div class="placeholder">Orders page coming soon...</div>
+
+        <div class="orders-table-container">
+          <table class="data-table" id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer Email</th>
+                <th>Amount (₹)</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:20px;">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-stats" id="ordersStats"></div>
       </section>
+
+      <!-- ORDER DETAILS MODAL -->
+      <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+          <button class="modal-close" id="orderModalClose">&times;</button>
+          <h3>Order Details</h3>
+          <div id="orderModalBody"></div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" id="orderModalCloseBtn">Close</button>
+            <button class="btn btn-dark" id="refundBtn" style="display:none;">Refund</button>
+          </div>
+        </div>
+      </div>
 
       <section id="productsSection" class="page-section">
         <div class="page-header">
