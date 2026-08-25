@@ -9,8 +9,28 @@ export function onAuthChange(callback) {
   supabase.auth.onAuthStateChange((_event, session) => callback(session?.user ?? null))
 }
 
-export function signIn(email, password) {
-  return supabase.auth.signInWithPassword({ email, password })
+export async function signIn(email, password) {
+  const result = await supabase.auth.signInWithPassword({ email, password })
+
+  if (result.data.user) {
+    const { data: isAdmin } = await supabase.rpc('is_admin')
+    await logLogin(result.data.user.id, email, isAdmin ? 'admin' : 'customer')
+  }
+
+  return result
+}
+
+async function logLogin(userId, email, userType) {
+  try {
+    await supabase.from('logins').insert({
+      user_id: userId,
+      email: email,
+      user_type: userType,
+      created_at: new Date().toISOString()
+    })
+  } catch (error) {
+    console.warn('Failed to log login:', error)
+  }
 }
 
 export function signUp(email, password, { fullName, phone } = {}) {

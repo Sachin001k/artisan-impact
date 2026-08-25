@@ -195,6 +195,25 @@ drop policy if exists "public insert cart_events" on cart_events;
 create policy "public insert cart_events" on cart_events for insert with check (true);
 
 -- ============================================================
+-- LOGINS — track all user login events for audit and analytics
+-- ============================================================
+create table if not exists logins (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id),
+  email text not null,
+  user_type text default 'customer', -- 'customer' | 'admin'
+  ip_address text,
+  user_agent text,
+  created_at timestamptz default now()
+);
+
+alter table logins enable row level security;
+drop policy if exists "admin read logins" on logins;
+create policy "admin read logins" on logins for select using (is_admin());
+drop policy if exists "service insert logins" on logins;
+create policy "service insert logins" on logins for insert with check (true);
+
+-- ============================================================
 -- ADMINS — emails allowed to see the admin dashboard
 -- (Settings → sql/schema.sql). Add more any time with:
 --   insert into admins (email) values ('someone@example.com');

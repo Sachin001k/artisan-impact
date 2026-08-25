@@ -148,7 +148,8 @@ async function loadOverviewData(dateFrom = null, dateTo = null) {
       loadCharts(from, to),
       loadRecentOrders(),
       loadRecentDonations(),
-      loadReviewsQueue()
+      loadReviewsQueue(),
+      loadLoginActivity()
     ])
   } catch (error) {
     console.error('Error loading overview:', error)
@@ -371,6 +372,33 @@ async function loadReviewsQueue() {
       <div class="activity-item-meta">${review.comment?.substring(0, 50)}...</div>
     </div>
   `).join('')
+}
+
+// ===== LOAD LOGIN ACTIVITY =====
+async function loadLoginActivity() {
+  const { data: logins } = await supabase
+    .from('logins')
+    .select('id, email, user_type, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  const list = document.getElementById('loginActivityList')
+  if (!list) return
+
+  if (!logins || logins.length === 0) {
+    list.innerHTML = '<div class="empty-state"><p>No login activity</p></div>'
+    return
+  }
+
+  list.innerHTML = logins.map(login => {
+    const badge = login.user_type === 'admin' ? '<span style="background:#FFB020; color:#1B2620; padding:2px 6px; border-radius:3px; font-size:0.7rem; font-weight:700;">ADMIN</span>' : ''
+    return `
+      <div class="activity-item">
+        <div class="activity-item-title">${login.email} ${badge}</div>
+        <div class="activity-item-meta">${new Date(login.created_at).toLocaleString()}</div>
+      </div>
+    `
+  }).join('')
 }
 
 // ===== START =====
