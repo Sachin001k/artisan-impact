@@ -8,14 +8,21 @@ let ordersChart = null
 // ===== INITIALIZATION =====
 async function initDashboard() {
   const user = await getUser()
+  console.log('Admin page - User:', user?.email)
+
   if (!user) {
+    console.log('Not signed in - redirecting to home')
+    alert('You must sign in first to access the admin dashboard.')
     window.location.href = '/'
     return
   }
 
-  const { data: isAdmin } = await supabase.rpc('is_admin')
+  const { data: isAdmin, error } = await supabase.rpc('is_admin')
+  console.log('Admin check:', { isAdmin, error, email: user.email })
+
   if (!isAdmin) {
-    alert('Access denied. Admin only.')
+    console.log('Not an admin - email:', user.email)
+    alert(`Access denied. Admin only.\n\nYour email: ${user.email}\n\nMake sure this email is in the Supabase admins table.`)
     window.location.href = '/'
     return
   }
