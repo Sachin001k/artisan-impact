@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Artisan Impact</title>
+<link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <img src="images/logo.jpeg" alt="Artisan Impact" style="height:32px; width:auto; margin-right:8px;">
+      Artisan Impact
+    </a>
+    <span id="adminWho" style="font-size:0.82rem; color:rgba(27,38,32,0.6); flex:1; text-align:center;"></span>
+    <nav class="pills">
+      <button class="menu-toggle" id="menuToggle" aria-label="More menu">⋯</button>
+    </nav>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <a href="/">Back to home</a>
+    </div>
+  </div>
+</header>
+
+<section style="padding-top:150px;">
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <div id="adminLogin" style="max-width:380px;">
+      <div class="section-head">
+        <div class="eyebrow">Admin</div>
+        <h2>Sign in to the dashboard</h2>
+        <p>First time here? Use the same form to create the admin account — it only unlocks the dashboard if this email is listed in the <code>admins</code> table.</p>
+      </div>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
+        <button type="button" class="auth-tab" data-tab="signup">Create account</button>
+      </div>
+      <form id="adminLoginForm">
+        <div>
+          <label for="adminEmail">Email</label>
+          <input id="adminEmail" type="email" required placeholder="admin@gmail.com">
+        </div>
+        <div>
+          <label for="adminPassword">Password</label>
+          <input id="adminPassword" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-dark" id="adminSubmit">Sign in</button>
+      </form>
+      <p class="form-note" id="adminLoginError" style="color:var(--poppy); margin-top:12px;"></p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="adminDashboard" style="display:none;">
+      <div class="section-head" style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <div class="eyebrow">Admin</div>
+          <h2>Dashboard</h2>
+        </div>
+        <button class="btn btn-ghost" id="adminSignOut" style="border-color:var(--ink); color:var(--ink);">Sign out</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-tile"><span id="statOrders">–</span><label>Paid orders</label></div>
+        <div class="stat-tile"><span id="statRevenue">–</span><label>Revenue</label></div>
+        <div class="stat-tile"><span id="statDonations">–</span><label>Donations</label></div>
+        <div class="stat-tile"><span id="statVolunteers">–</span><label>Volunteer signups</label></div>
+        <div class="stat-tile"><span id="statCartAdds">–</span><label>Cart adds</label></div>
+        <div class="stat-tile"><span id="statPendingReviews">–</span><label>Reviews to approve</label></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Recent orders</h4>
+        <div id="ordersList"></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Recent donations</h4>
+        <div id="donationsList"></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Most added to cart</h4>
+        <div id="cartEventsList"></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Volunteer signups</h4>
+        <div id="volunteersList"></div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Reviews</h4>
+        <div id="testimonialsList"></div>
+      </div>
+
+      <div class="admin-section" style="margin-top:40px; padding-top:40px; border-top:1px solid var(--line);">
+        <h4>Product Management</h4>
+        <p>Manage all artwork in the shop — add, edit, and delete products.</p>
+        <a href="/admin/products" class="btn btn-dark">Go to Product Manager</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
