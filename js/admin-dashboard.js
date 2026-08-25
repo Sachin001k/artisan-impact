@@ -149,6 +149,20 @@ function initEventListeners() {
   // Modal close
   document.getElementById('orderModalClose')?.addEventListener('click', closeOrderModal)
   document.getElementById('orderModalCloseBtn')?.addEventListener('click', closeOrderModal)
+
+  // Products page
+  document.getElementById('productSearch')?.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      loadProducts()
+    }
+  })
+
+  document.getElementById('productCategory')?.addEventListener('change', () => {
+    loadProducts()
+  })
+
+  document.getElementById('productModalClose')?.addEventListener('click', closeProductModal)
+  document.getElementById('productModalCloseBtn')?.addEventListener('click', closeProductModal)
 }
 
 // ===== LOAD OVERVIEW DATA =====
@@ -527,20 +541,129 @@ function closeOrderModal() {
   document.getElementById('orderModal').classList.remove('open')
 }
 
+// ===== LOAD PRODUCTS =====
+async function loadProducts() {
+  try {
+    const search = document.getElementById('productSearch')?.value || ''
+    const category = document.getElementById('productCategory')?.value || ''
+
+    let query = supabase
+      .from('products')
+      .select('id, title, artist, price_inr, category, image_url')
+      .order('created_at', { ascending: false })
+
+    if (category) {
+      query = query.eq('category', category)
+    }
+
+    const { data: allProducts, error } = await query
+
+    if (error) throw error
+
+    const filtered = allProducts.filter(p => {
+      if (!search) return true
+      return p.title.toLowerCase().includes(search.toLowerCase()) ||
+             p.artist.toLowerCase().includes(search.toLowerCase())
+    })
+
+    const grid = document.getElementById('productsGrid')
+    const stats = document.getElementById('productsStats')
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:rgba(27,38,32,0.6);">No products found</div>'
+      stats.innerHTML = ''
+      return
+    }
+
+    grid.innerHTML = filtered.map(product => `
+      <div class="product-card" onclick="openProductModal('${product.id}')">
+        <div class="product-image">
+          ${product.image_url ? `<img src="${product.image_url}" alt="${product.title}">` : '🎨'}
+        </div>
+        <div class="product-info">
+          <div class="product-title">${product.title}</div>
+          <div class="product-artist">${product.artist}</div>
+          <div class="product-meta">
+            <span class="product-price">₹${product.price_inr}</span>
+            <span class="product-category">${product.category}</span>
+          </div>
+        </div>
+      </div>
+    `).join('')
+
+    stats.innerHTML = `Showing ${filtered.length} products`
+  } catch (error) {
+    console.error('Error loading products:', error)
+    document.getElementById('productsGrid').innerHTML = '<div style="color:red; text-align:center;">Error loading products</div>'
+  }
+}
+
+// ===== OPEN PRODUCT MODAL =====
+async function openProductModal(productId) {
+  const { data: product } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', productId)
+    .single()
+
+  if (!product) return
+
+  const modal = document.getElementById('productModal')
+  const body = document.getElementById('productModalBody')
+
+  body.innerHTML = `
+    <div style="margin-bottom:20px;">
+      ${product.image_url ? `<img src="${product.image_url}" alt="${product.title}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:16px;">` : ''}
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Title</span>
+      <span class="order-detail-value">${product.title}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Artist</span>
+      <span class="order-detail-value">${product.artist}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Category</span>
+      <span class="order-detail-value"><span class="product-category">${product.category}</span></span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Price</span>
+      <span class="order-detail-value">₹${product.price_inr}</span>
+    </div>
+    <div class="order-detail-row">
+      <span class="order-detail-label">Created</span>
+      <span class="order-detail-value">${new Date(product.created_at).toLocaleDateString()}</span>
+    </div>
+  `
+
+  modal.classList.add('open')
+}
+
+// ===== CLOSE PRODUCT MODAL =====
+function closeProductModal() {
+  document.getElementById('productModal').classList.remove('open')
+}
+
 // Make functions global
 window.openOrderModal = openOrderModal
 window.closeOrderModal = closeOrderModal
 window.loadOrders = loadOrders
+window.openProductModal = openProductModal
+window.closeProductModal = closeProductModal
+window.loadProducts = loadProducts
 
 // ===== START =====
 document.addEventListener('DOMContentLoaded', async () => {
   await initDashboard()
-  // Load orders when navigating to orders section
+  // Load orders/products when navigating to sections
   const origNavigate = window.navigateToSection
   window.navigateToSection = function(section) {
     origNavigate(section)
     if (section === 'orders') {
       setTimeout(() => loadOrders(), 100)
+    } else if (section === 'products') {
+      setTimeout(() => loadProducts(), 100)
     }
   }
 })

@@ -321,11 +321,41 @@
 
       <section id="productsSection" class="page-section">
         <div class="page-header">
-          <h2>Products</h2>
-          <p>Manage artwork and inventory</p>
+          <div>
+            <h2>Products</h2>
+            <p>Manage artwork and inventory</p>
+          </div>
+          <div class="header-actions">
+            <input type="text" id="productSearch" class="search-input" placeholder="Search by title or artist...">
+            <select id="productCategory" class="filter-select">
+              <option value="">All Categories</option>
+              <option value="painting">Painting</option>
+              <option value="craft">Craft</option>
+              <option value="print">Print</option>
+            </select>
+            <a href="/admin/products" class="btn btn-dark">Full Manager</a>
+          </div>
         </div>
-        <div class="placeholder">Products page coming soon...</div>
+
+        <div class="products-grid" id="productsGrid">
+          <div style="grid-column:1/-1; text-align:center; padding:40px; color:rgba(27,38,32,0.6);">Loading products...</div>
+        </div>
+
+        <div class="table-stats" id="productsStats"></div>
       </section>
+
+      <!-- PRODUCT DETAILS MODAL -->
+      <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+          <button class="modal-close" id="productModalClose">&times;</button>
+          <h3>Product Details</h3>
+          <div id="productModalBody"></div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" id="productModalCloseBtn">Close</button>
+            <a href="/admin/products" class="btn btn-dark">Edit in Manager</a>
+          </div>
+        </div>
+      </div>
 
       <section id="customersSection" class="page-section">
         <div class="page-header">
