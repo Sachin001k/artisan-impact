@@ -8,31 +8,103 @@ let ordersChart = null
 // ===== INITIALIZATION =====
 async function initDashboard() {
   const user = await getUser()
-  console.log('Admin page - User:', user?.email)
 
   if (!user) {
-    console.log('Not signed in - redirecting to home')
-    alert('You must sign in first to access the admin dashboard.')
-    window.location.href = '/'
+    // No user signed in - show admin login form
+    showAdminLoginForm()
     return
   }
 
-  const { data: isAdmin, error } = await supabase.rpc('is_admin')
-  console.log('Admin check:', { isAdmin, error, email: user.email })
+  const { data: isAdmin } = await supabase.rpc('is_admin')
 
   if (!isAdmin) {
-    console.log('Not an admin - email:', user.email)
+    // User signed in but not an admin
     alert(`Access denied. Admin only.\n\nYour email: ${user.email}\n\nMake sure this email is in the Supabase admins table.`)
-    window.location.href = '/'
+    await supabase.auth.signOut()
+    showAdminLoginForm()
     return
   }
 
+  // User is admin - show dashboard
   currentUser = user
   document.getElementById('adminEmail').textContent = user.email
+  document.getElementById('adminLoginScreen').style.display = 'none'
 
   initSidebar()
   initEventListeners()
   await loadOverviewData()
+}
+
+// ===== SHOW ADMIN LOGIN FORM =====
+function showAdminLoginForm() {
+  document.getElementById('adminLoginScreen').style.display = 'flex'
+  document.querySelector('.dashboard-container > aside').style.display = 'none'
+  document.querySelector('.dashboard-container > main').style.display = 'none'
+
+  document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin)
+}
+
+// ===== HIDE ADMIN LOGIN FORM =====
+function hideAdminLoginForm() {
+  document.getElementById('adminLoginScreen').style.display = 'none'
+  document.querySelector('.dashboard-container > aside').style.display = 'flex'
+  document.querySelector('.dashboard-container > main').style.display = 'flex'
+}
+
+// ===== HANDLE ADMIN LOGIN =====
+async function handleAdminLogin(e) {
+  e.preventDefault()
+
+  const email = document.getElementById('adminLoginEmail').value
+  const password = document.getElementById('adminLoginPassword').value
+  const errorEl = document.getElementById('adminLoginError')
+
+  try {
+    errorEl.style.display = 'none'
+
+    // Try to sign in
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      errorEl.textContent = error.message
+      errorEl.style.display = 'block'
+      return
+    }
+
+    if (!data.user) {
+      // Try to sign up if first time
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({ email, password })
+
+      if (signupError) {
+        errorEl.textContent = signupError.message
+        errorEl.style.display = 'block'
+        return
+      }
+
+      errorEl.textContent = 'Account created. Please sign in now.'
+      errorEl.style.color = '#12B8A0'
+      errorEl.style.display = 'block'
+      document.getElementById('adminLoginForm').reset()
+      return
+    }
+
+    // Check if admin
+    const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin')
+
+    if (adminError || !isAdmin) {
+      await supabase.auth.signOut()
+      errorEl.textContent = `Access denied. Email "${email}" is not in the admin list.`
+      errorEl.style.display = 'block'
+      return
+    }
+
+    // Admin login successful
+    hideAdminLoginForm()
+    await initDashboard()
+  } catch (error) {
+    errorEl.textContent = 'An error occurred. Please try again.'
+    errorEl.style.display = 'block'
+  }
 }
 
 // ===== SIDEBAR NAVIGATION =====
@@ -662,7 +734,9 @@ window.loadProducts = loadProducts
 
 // ===== START =====
 document.addEventListener('DOMContentLoaded', async () => {
+  // Check if user is already admin, show login form if not
   await initDashboard()
+
   // Load orders/products when navigating to sections
   const origNavigate = window.navigateToSection
   window.navigateToSection = function(section) {

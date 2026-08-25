@@ -14,6 +14,33 @@
 <body>
 
 <div class="dashboard-container">
+  <!-- ADMIN LOGIN SCREEN -->
+  <div id="adminLoginScreen" style="display:none; position:fixed; inset:0; background:var(--paper); z-index:1000; display:flex; align-items:center; justify-content:center;">
+    <div style="max-width:420px; width:90%;">
+      <div style="text-align:center; margin-bottom:32px;">
+        <img src="images/logo.jpeg" alt="Artisan Impact" style="height:48px; margin-bottom:16px;">
+        <h2 style="margin:0 0 8px 0; color:var(--ink);">Admin Dashboard</h2>
+        <p style="margin:0; color:rgba(27,38,32,0.6);">Sign in to access the admin panel</p>
+      </div>
+
+      <form id="adminLoginForm" style="background:#fff; border:1.5px solid rgba(255,176,32,0.25); border-radius:16px; padding:32px;">
+        <div style="margin-bottom:16px;">
+          <label for="adminLoginEmail" style="display:block; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; font-weight:600; color:var(--poppy);">Email</label>
+          <input id="adminLoginEmail" type="email" required placeholder="admin@gmail.com" style="width:100%; padding:11px 14px; border:2px solid rgba(255,176,32,0.3); border-radius:8px; font-size:0.95rem;">
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <label for="adminLoginPassword" style="display:block; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; font-weight:600; color:var(--poppy);">Password</label>
+          <input id="adminLoginPassword" type="password" required minlength="6" placeholder="At least 6 characters" style="width:100%; padding:11px 14px; border:2px solid rgba(255,176,32,0.3); border-radius:8px; font-size:0.95rem;">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" style="margin-bottom:12px;">Sign in</button>
+        <p id="adminLoginError" style="color:var(--poppy); font-size:0.85rem; margin:0; text-align:center; display:none;"></p>
+        <p style="font-size:0.85rem; color:rgba(27,38,32,0.6); margin:12px 0 0 0; text-align:center;">First time? Use this form to create your account. Access only if your email is in the admin list.</p>
+      </form>
+    </div>
+  </div>
+
   <!-- SIDEBAR -->
   <aside class="dashboard-sidebar" id="dashboardSidebar">
     <div class="sidebar-header">
