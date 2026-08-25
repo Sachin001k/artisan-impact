@@ -51,22 +51,31 @@ export function initAuthUI() {
   const accountArea = document.getElementById('accountArea')
   if (!modal || !accountArea) return
 
-  const form = document.getElementById('authForm')
-  const tabs = document.querySelectorAll('.auth-tab')
-  const submitBtn = document.getElementById('authSubmit')
-  const errorEl = document.getElementById('authError')
-  const headingEl = document.getElementById('authHeading')
-  const signupFields = document.getElementById('authSignupFields')
-  const nameInput = document.getElementById('authName')
-  const phoneInput = document.getElementById('authPhone')
-  let mode = 'signin'
+  const signInScreen = document.getElementById('authSignInScreen')
+  const signUpScreen = document.getElementById('authSignUpScreen')
+  const signInForm = document.getElementById('authForm')
+  const signUpForm = document.getElementById('authSignupForm')
+  const signInError = document.getElementById('authError')
+  const signUpError = document.getElementById('authSignupError')
+
+  function switchToSignUp() {
+    signInScreen.style.display = 'none'
+    signUpScreen.style.display = 'block'
+    signUpError.textContent = ''
+  }
+
+  function switchToSignIn() {
+    signUpScreen.style.display = 'none'
+    signInScreen.style.display = 'block'
+    signInError.textContent = ''
+  }
 
   function renderAccountArea(user) {
     if (user) {
       const initials = getInitials(user)
       const label = user.user_metadata?.full_name || user.email
       accountArea.innerHTML = `
-        <a href="account.html" class="user-avatar" title="${label}">${initials}</a>
+        <a href="/account" class="user-avatar" title="${label}">${initials}</a>
         <button class="account-toggle" id="signOutBtn">Sign out</button>
       `
       document.getElementById('signOutBtn').addEventListener('click', () => signOut())
@@ -74,49 +83,56 @@ export function initAuthUI() {
       accountArea.innerHTML = `<button class="account-toggle" id="accountToggle">Sign in</button>`
       document
         .getElementById('accountToggle')
-        .addEventListener('click', () => openAuthModal('Sign in to your account.'))
+        .addEventListener('click', () => openAuthModal())
     }
     const accountLink = document.getElementById('myAccountLink')
     if (accountLink) accountLink.style.display = user ? 'inline-flex' : 'none'
   }
 
   document.getElementById('authClose').addEventListener('click', closeAuthModal)
+  document.getElementById('switchToSignup').addEventListener('click', switchToSignUp)
+  document.getElementById('switchToSignin').addEventListener('click', switchToSignIn)
 
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      tabs.forEach((t) => t.classList.remove('active'))
-      tab.classList.add('active')
-      mode = tab.dataset.tab
-      submitBtn.textContent = mode === 'signin' ? 'Sign in' : 'Create account'
-      headingEl.textContent = mode === 'signin' ? 'Welcome back' : 'Create your account'
-      signupFields.style.display = mode === 'signup' ? 'grid' : 'none'
-      nameInput.required = mode === 'signup'
-      phoneInput.required = mode === 'signup'
-      errorEl.textContent = ''
-    })
-  })
-
-  form.addEventListener('submit', async (e) => {
+  signInForm.addEventListener('submit', async (e) => {
     e.preventDefault()
-    errorEl.textContent = ''
+    signInError.textContent = ''
     const email = document.getElementById('authEmail').value
     const password = document.getElementById('authPassword').value
 
-    const { data, error } =
-      mode === 'signin'
-        ? await signIn(email, password)
-        : await signUp(email, password, { fullName: nameInput.value, phone: phoneInput.value })
+    const { error } = await signIn(email, password)
 
     if (error) {
-      errorEl.textContent = error.message
+      signInError.textContent = error.message
       return
     }
-    if (mode === 'signup' && !data.session) {
-      errorEl.textContent = "Account created — check your email to confirm it, then come back and sign in."
-      return
-    }
-    form.reset()
+    signInForm.reset()
     closeAuthModal()
+    switchToSignIn()
+  })
+
+  signUpForm.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    signUpError.textContent = ''
+    const name = document.getElementById('authName').value
+    const phone = document.getElementById('authPhone').value
+    const email = document.getElementById('authEmailSignup').value
+    const password = document.getElementById('authPasswordSignup').value
+
+    const { data, error } = await signUp(email, password, { fullName: name, phone })
+
+    if (error) {
+      signUpError.textContent = error.message
+      return
+    }
+    if (!data.session) {
+      signUpError.textContent = "Account created — check your email to confirm it, then sign in."
+      signUpForm.reset()
+      setTimeout(switchToSignIn, 2000)
+      return
+    }
+    signUpForm.reset()
+    closeAuthModal()
+    switchToSignIn()
   })
 
   onAuthChange(renderAccountArea)

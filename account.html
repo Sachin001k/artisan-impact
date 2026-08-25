@@ -44,34 +44,56 @@
 <div class="auth-modal" id="authModal">
   <div class="auth-card">
     <button class="cart-close" id="authClose">&times;</button>
-    <h3 id="authHeading">Welcome back</h3>
-    <div class="auth-tabs">
-      <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
-      <button type="button" class="auth-tab" data-tab="signup">Create account</button>
+
+    <!-- SIGN IN SCREEN -->
+    <div id="authSignInScreen">
+      <h3>Welcome back</h3>
+      <p class="auth-note">Sign in to your Artisan Impact account.</p>
+      <form id="authForm">
+        <div>
+          <label for="authEmail">Email address</label>
+          <input id="authEmail" type="email" required placeholder="you@email.com">
+        </div>
+        <div>
+          <label for="authPassword">Password</label>
+          <input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSubmit">Sign in</button>
+      </form>
+      <p class="form-note" id="authError" style="color:var(--poppy);"></p>
+      <div class="auth-footer">
+        <p>Don't have an account? <button type="button" id="switchToSignup" class="auth-link">Create one</button></p>
+      </div>
     </div>
-    <p class="auth-note" id="authNote">Sign in to your account.</p>
-    <form id="authForm">
-      <div class="field-row" id="authSignupFields" style="display:none;">
+
+    <!-- CREATE ACCOUNT SCREEN -->
+    <div id="authSignUpScreen" style="display:none;">
+      <h3>Create your account</h3>
+      <p class="auth-note">Join Artisan Impact and support young artists.</p>
+      <form id="authSignupForm">
         <div>
           <label for="authName">Full name</label>
-          <input id="authName" type="text" placeholder="Your name">
+          <input id="authName" type="text" required placeholder="Your name">
         </div>
         <div>
           <label for="authPhone">Phone number</label>
-          <input id="authPhone" type="tel" placeholder="10-digit number">
+          <input id="authPhone" type="tel" required placeholder="10-digit number">
         </div>
+        <div>
+          <label for="authEmailSignup">Email address</label>
+          <input id="authEmailSignup" type="email" required placeholder="you@email.com">
+        </div>
+        <div>
+          <label for="authPasswordSignup">Password</label>
+          <input id="authPasswordSignup" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSignupSubmit">Create account</button>
+      </form>
+      <p class="form-note" id="authSignupError" style="color:var(--poppy);"></p>
+      <div class="auth-footer">
+        <p>Already have an account? <button type="button" id="switchToSignin" class="auth-link">Sign in</button></p>
       </div>
-      <div>
-        <label for="authEmail">Email</label>
-        <input id="authEmail" type="email" required placeholder="you@email.com">
-      </div>
-      <div>
-        <label for="authPassword">Password</label>
-        <input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters">
-      </div>
-      <button type="submit" class="btn btn-primary btn-full" id="authSubmit">Sign in</button>
-    </form>
-    <p class="form-note" id="authError" style="color:var(--poppy);"></p>
+    </div>
   </div>
 </div>
 
