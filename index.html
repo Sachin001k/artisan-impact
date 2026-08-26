@@ -315,23 +315,75 @@
       <h2>Fund paint, paper, and clay directly.</h2>
       <p>No purchase needed — just a direct line from you to the studio table.</p>
 
-      <form class="donate-form" id="donateForm">
-        <div class="donate-presets">
-          <button type="button" class="donate-preset" data-amount="500">₹500</button>
-          <button type="button" class="donate-preset" data-amount="1000">₹1,000</button>
-          <button type="button" class="donate-preset" data-amount="2500">₹2,500</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start;">
+        <form class="donate-form" id="donateForm">
+          <div class="donate-presets">
+            <button type="button" class="donate-preset" data-amount="500">₹500</button>
+            <button type="button" class="donate-preset" data-amount="1000">₹1,000</button>
+            <button type="button" class="donate-preset" data-amount="2500">₹2,500</button>
+          </div>
+          <div class="donate-field">
+            <label for="donateAmount">Amount (₹)</label>
+            <input id="donateAmount" type="number" min="1" placeholder="e.g. 500" required>
+          </div>
+          <div class="donate-field">
+            <label for="donateEmail">Email</label>
+            <input id="donateEmail" type="email" placeholder="you@email.com" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Donate now</button>
+          <p style="font-size:0.85rem; color:rgba(27,38,32,0.6); margin-top:12px; text-align:center;">We accept all major payment methods including GPay, Cards, and UPI.</p>
+        </form>
+
+        <div style="background:linear-gradient(135deg, rgba(255,176,32,0.08), rgba(18,184,160,0.08)); border:1.5px solid rgba(255,176,32,0.2); border-radius:12px; padding:24px;">
+          <h4 style="margin:0 0 16px 0; color:var(--ink);">How It Works</h4>
+
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:var(--marigold); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">1</div>
+              <div>
+                <div style="font-weight:600; color:var(--ink); font-size:0.9rem;">Enter Amount</div>
+                <div style="font-size:0.8rem; color:rgba(27,38,32,0.6);">Choose a preset or enter custom amount</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:var(--cobalt); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">2</div>
+              <div>
+                <div style="font-weight:600; color:var(--ink); font-size:0.9rem;">Secure Payment</div>
+                <div style="font-size:0.8rem; color:rgba(27,38,32,0.6);">Redirected to Razorpay's secure gateway</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">3</div>
+              <div>
+                <div style="font-weight:600; color:var(--ink); font-size:0.9rem;">Choose Payment Method</div>
+                <div style="font-size:0.8rem; color:rgba(27,38,32,0.6);">GPay, Cards, UPI, Net Banking & more</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:var(--poppy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">4</div>
+              <div>
+                <div style="font-weight:600; color:var(--ink); font-size:0.9rem;">Confirmation</div>
+                <div style="font-size:0.8rem; color:rgba(27,38,32,0.6);">Receipt sent to your email</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,176,32,0.2);">
+            <p style="margin:0; font-size:0.8rem; color:rgba(27,38,32,0.6); display:flex; align-items:center; gap:8px;">
+              <span style="font-size:1.2rem;">🔒</span> Powered by Razorpay — PCI DSS Level 1 certified
+            </p>
+          </div>
         </div>
-        <div class="donate-field">
-          <label for="donateAmount">Amount (₹)</label>
-          <input id="donateAmount" type="number" min="1" placeholder="e.g. 500" required>
-        </div>
-        <div class="donate-field">
-          <label for="donateEmail">Email</label>
-          <input id="donateEmail" type="email" placeholder="you@email.com" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">Donate now</button>
-        <p style="font-size:0.85rem; color:rgba(27,38,32,0.6); margin-top:12px; text-align:center;">We accept all major payment methods including GPay, Cards, and UPI.</p>
-      </form>
+      </div>
     </div>
   </div>
 </section>
