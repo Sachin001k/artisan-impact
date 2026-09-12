@@ -97,22 +97,25 @@
      - `First part photo.jpg`
    - **Excluded images:** `logo.jpeg`, `About us Mihir photo.png` (used elsewhere)
    
-   **QUICK START — Run this SQL to add images (2 minutes):**
+   **QUICK START — Add dummy images now (2 minutes):**
    1. Go to **Supabase Dashboard** → your project → **SQL Editor** → **New Query**
    2. Copy and paste the script from `sql/update-product-images.sql`
    3. Click **Run**
-   4. Images now appear in shop (refresh the page)
+   4. Dummy images appear in shop (refresh to see them) ✨
    
-   This maps images to first 3 products:
-   - `Our Street at Dusk` (₹380) → `First part photo.jpg`
-   - `Monsoon in Marigold` (₹1200) → `First part photo and product 950rs.jpg`
-   - `Terracotta Bird Set` (₹650) → `first part photo and product 650rs.jpg`
+   This adds placeholder images from **picsum.photos** to first 3 products:
+   - `Our Street at Dusk` (₹380) → https://picsum.photos/400/300?random=1
+   - `Monsoon in Marigold` (₹1200) → https://picsum.photos/400/300?random=2
+   - `Terracotta Bird Set` (₹650) → https://picsum.photos/400/300?random=3
 
-   **For production (using Supabase Storage):**
-   1. Upload the 4 image files to **Supabase Storage** (create a public bucket called `products`)
-   2. Get the public URL for each image
-   3. Update `sql/update-product-images.sql` with Supabase Storage URLs
-   4. Run the updated script in SQL Editor
+   **Later — Replace with your actual images:**
+   1. Upload your actual images to **Supabase Storage** (create bucket `products`)
+   2. Get public URLs from Supabase (Supabase → Storage → click image → copy URL)
+   3. Replace the `picsum.photos` URLs in Supabase `products` table with your URLs
+   4. Or update `sql/update-product-images.sql` with your URLs and re-run
+   
+   **Local images alternative:**
+   - Use `/images/First%20part%20photo.jpg` paths if serving from static folder
 
    **Full guide:** See `sql/README.md` for detailed instructions
 
