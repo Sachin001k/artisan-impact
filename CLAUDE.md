@@ -92,20 +92,27 @@
 
 ### 1. **Test Payment Flow End-to-End** 🔴 HIGH PRIORITY
    - **Current Status:** Payment infrastructure ready but untested
+   - **⚠️ KNOWN GOTCHA — Wrong dev server gives "Could not start checkout":**
+     Running `npm run dev` starts a plain **static file server** (`http-server`)
+     on port 8000. That server has no backend at all — `/api/create-order`
+     and `/api/verify-payment` don't exist there — so any payment attempt
+     fails with "Could not start checkout. Please try again in a moment."
+     **Always use `vercel dev` instead** (usually port 3000/3001) — that's
+     the only server that runs the Razorpay backend functions locally.
    - **Tasks:**
-     1. Start local server: `vercel dev`
-     2. Open http://localhost:3000
+     1. Start local server: `vercel dev` (NOT `npm run dev`)
+     2. Open the URL it prints (e.g. http://localhost:3001)
      3. Add 2-3 products to cart
-     4. Click Cart → "Checkout & pay"
+     4. Click Cart → "Checkout & pay" → lands on `checkout.html`
      5. Sign in (create test account if needed)
-     6. Complete Razorpay checkout with test card:
+     6. Click "Pay now" → complete Razorpay checkout with test card:
         ```
         Card: 4111 1111 1111 1111
         Expiry: Any future date
         CVV: Any 3 digits
         ```
      7. Verify:
-        - ✅ Success toast appears
+        - ✅ In-page success confirmation appears (checkout.html step 3)
         - ✅ Order saved to Supabase `orders` table
         - ✅ Cart cleared after payment
         - ✅ Order appears in admin dashboard
@@ -114,24 +121,51 @@
      - Donation flow (no sign-in required)
      - Mobile checkout (responsive)
      - Payment failure handling
-   - **Guide:** See `RAZORPAY_SETUP.md` for detailed test instructions
+   - **Guide:** See `RAZORPAY_SETUP.md` and `PAYMENT_TESTING.md` for detailed test instructions
 
-### 2. **Improve Payment UI/UX** 🟡 HIGH PRIORITY
-   - **Current Status:** Functional but basic payment experience
-   - **Improvements needed:**
-     1. **Payment Progress Indicator** — Show step-by-step checkout progress
-        - Step 1: Review Cart
-        - Step 2: Shipping Details
-        - Step 3: Payment
-        - Step 4: Confirmation
-     2. **Order Summary During Checkout** — Show item list + total before payment
-     3. **Payment Status Page** — Better visual feedback during processing
-     4. **Error Handling** — User-friendly error messages instead of toast
-     5. **Loading States** — Spinners/progress indicators during payment processing
-     6. **Success Celebration** — More engaging success message with order details
-     7. **Invoice/Receipt** — Generate and email order receipt
-   - **Files to enhance:** `js/checkout.js`, `index.html` (checkout section)
-   - **See:** `PAYMENT_UI_IDEAS.md` (new file created below)
+### 1b. **Payment Methods (UPI / GPay / PhonePe / Cards / Netbanking)** ✅ ALREADY SUPPORTED
+   - **Decision (Sep 2026):** Use Razorpay's **Standard Checkout** popup as-is,
+     rather than building a fully custom payment-methods page. Rationale:
+     Standard Checkout already renders UPI (with GPay/PhonePe/Paytm app
+     buttons on mobile, or a scannable QR code on desktop), Cards, Netbanking,
+     and Wallets as tabs in one modal — with zero extra code — and Razorpay
+     handles PCI-DSS compliance for card data. A fully custom-branded payment
+     page was considered but rejected for now: it would take 3-5+ days
+     (separate flows per method, 3-D Secure redirects, UPI status polling)
+     for a purely cosmetic improvement over Razorpay's popup.
+   - **Verified in code:** Neither `js/checkout-page.js`, `js/donate.js`, nor
+     `api/create-order.js` set a `method` restriction on the Razorpay options,
+     so all payment methods Razorpay supports for this account are shown by
+     default. No code change was needed for this — only the dev-server fix
+     above (1.) was blocking it from ever opening.
+   - **To confirm it's working:** Once running via `vercel dev`, click "Pay
+     now" on `checkout.html` — the Razorpay modal should show tabs for
+     UPI / Card / Netbanking / Wallet. On a real phone with GPay or PhonePe
+     installed, those show as one-tap app buttons under the UPI tab.
+   - **Revisit later if:** the team decides Razorpay's popup branding is a
+     dealbreaker — then build Option B (custom tabbed payment page) as a
+     separate project, reusing Razorpay's JS SDK underneath for security.
+
+### 2. **Improve Payment UI/UX** 🟡 MEDIUM PRIORITY
+   - **Current Status:** ✅ Dedicated checkout page built (Sep 2026)
+     - `checkout.html` + `js/checkout-page.js` replaced the old inline
+       Razorpay-modal-on-homepage flow. "Checkout & pay" now navigates to
+       its own page with:
+       - ✅ Step indicator (Cart → Review & Pay → Confirmed)
+       - ✅ Order summary listing every item + total before paying
+       - ✅ Sign-in prompt inline if not logged in
+       - ✅ Processing overlay (spinner) while payment verifies
+       - ✅ In-page success confirmation (no more toast) with payment ID
+         and links to "Continue shopping" / "View my orders"
+   - **Still remaining (optional polish):**
+     1. **Shipping/address collection** — not yet collected anywhere;
+        add a step to `checkout.html` if physical delivery needs an address
+     2. **Better error messages** — currently a plain `alert()` on failure;
+        replace with an inline error banner matching the site's style
+     3. **Invoice/Receipt email** — generate and email order receipt
+        (needs an email provider — see Task 6)
+   - **Files:** `checkout.html`, `js/checkout-page.js`, `js/checkout.js`
+   - **See:** `PAYMENT_UI_IDEAS.md` for the original idea list (partially done)
 
 ### 3. **Add Product Images (Replace Dummy Images)** 🟡 MEDIUM PRIORITY
    - **Current Status:** All 6 products have dummy picsum.photos images
