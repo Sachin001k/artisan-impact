@@ -1,30 +1,40 @@
 -- Run this in Supabase: Project → SQL Editor → New query → paste → Run
--- This updates ALL products with dummy images from picsum.photos
--- REPLACE THESE URLS with your actual images when ready!
+-- This replaces the dummy picsum.photos images with your real photos
+-- from the /images folder, matched to the closest product price.
 
--- Update all 6 products with unique dummy images
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=1' WHERE title = 'Our Street at Dusk' AND price_inr = 380;
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=2' WHERE title = 'Monsoon in Marigold' AND price_inr = 1200;
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=3' WHERE title = 'Terracotta Bird Set' AND price_inr = 650;
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=4' WHERE title = 'City of Kites' AND price_inr = 450;
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=5' WHERE title = 'Grandmother''s Garden' AND price_inr = 1800;
-UPDATE products SET image_url = 'https://picsum.photos/400/300?random=6' WHERE title = 'Woven Wall Hanging' AND price_inr = 900;
+-- first-part-photo-and-product-200rs.jpg (~₹200) → Our Street at Dusk (₹380)
+UPDATE products SET image_url = '/images/first-part-photo-and-product-200rs.jpg' WHERE title = 'Our Street at Dusk' AND price_inr = 380;
+
+-- first-part-photo-and-product-650rs.jpg (₹650) → Terracotta Bird Set (₹650, exact match)
+UPDATE products SET image_url = '/images/first-part-photo-and-product-650rs.jpg' WHERE title = 'Terracotta Bird Set' AND price_inr = 650;
+
+-- first-part-photo-and-product-950rs.jpg (~₹950) → Woven Wall Hanging (₹900, closest)
+UPDATE products SET image_url = '/images/first-part-photo-and-product-950rs.jpg' WHERE title = 'Woven Wall Hanging' AND price_inr = 900;
+
+-- first-part-photo.jpg (no price hint) → City of Kites (₹450) — arbitrary pick, swap if you'd rather use it elsewhere
+UPDATE products SET image_url = '/images/first-part-photo.jpg' WHERE title = 'City of Kites' AND price_inr = 450;
+
+-- These 2 products still have no matching real photo yet — keep them on the
+-- picsum.photos placeholders until you have more product photos:
+--   Monsoon in Marigold (₹1200)
+--   Grandmother's Garden (₹1800)
+-- (No action needed — their image_url already points to picsum.photos from
+-- the earlier setup and is left untouched by this script.)
 
 -- =============================================================================
 -- IMAGE REPLACEMENT GUIDE
 -- =============================================================================
--- When you have your actual images, replace the picsum.photos URLs above with:
+-- Local /images paths work in both local dev (vercel dev) and production
+-- (Vercel serves the whole repo as static files) — no extra setup needed.
 --
--- Option 1: Local folder paths (if serving from /images):
---   /images/First%20part%20photo.jpg
+-- To swap in more real photos later:
+-- 1. Add the new image file to the /images folder (NO SPACES in the
+--    filename — vercel dev's static server 404s on filenames with spaces,
+--    even URL-encoded — confirmed the hard way on this project)
+-- 2. UPDATE products SET image_url = '/images/your-file-name.jpg' WHERE title = '...';
 --
--- Option 2: Supabase Storage URLs (recommended for production):
---   https://YOUR-PROJECT.supabase.co/storage/v1/object/public/products/image-name.jpg
---
--- To get Supabase Storage URL:
--- 1. Go to Supabase Dashboard → Storage
--- 2. Create a public bucket named "products"
--- 3. Upload your images
--- 4. Click the image and copy "Public URL"
--- 5. Replace the picsum.photos URLs with your actual Supabase URLs
+-- Or move to Supabase Storage for production (optional, not required):
+-- 1. Supabase Dashboard → Storage → create a public bucket named "products"
+-- 2. Upload images, copy each "Public URL"
+-- 3. Use that full URL instead of the /images/... path
 -- =============================================================================
