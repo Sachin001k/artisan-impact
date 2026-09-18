@@ -92,13 +92,23 @@
 
 ### 1. **Test Payment Flow End-to-End** 🔴 HIGH PRIORITY
    - **Current Status:** Payment infrastructure ready but untested
-   - **⚠️ KNOWN GOTCHA — Wrong dev server gives "Could not start checkout":**
+   - **⚠️ KNOWN GOTCHA #1 — Wrong dev server gives "Could not start checkout":**
      Running `npm run dev` starts a plain **static file server** (`http-server`)
      on port 8000. That server has no backend at all — `/api/create-order`
      and `/api/verify-payment` don't exist there — so any payment attempt
      fails with "Could not start checkout. Please try again in a moment."
-     **Always use `vercel dev` instead** (usually port 3000/3001) — that's
+     **Always use `vercel dev` instead** (usually port 3000/3001+) — that's
      the only server that runs the Razorpay backend functions locally.
+   - **⚠️ KNOWN GOTCHA #2 (FIXED Sep 2026) — `FUNCTION_INVOCATION_FAILED` even
+     on `vercel dev`:** `api/create-order.js` and `api/verify-payment.js` use
+     ES module syntax (`import`/`export`), but `package.json` had no `"type":
+     "module"` field. Node's own CLI silently reparses ambiguous files like
+     this, but Vercel's serverless runtime does not — it crashed with a bare
+     500 `FUNCTION_INVOCATION_FAILED` and no useful client-side error.
+     **Fix:** added `"type": "module"` to `package.json`. Verified safe — no
+     file in the repo uses CommonJS (`require`/`module.exports`). If payments
+     ever start failing again with this exact error after editing `package.json`,
+     check that field wasn't accidentally removed.
    - **Tasks:**
      1. Start local server: `vercel dev` (NOT `npm run dev`)
      2. Open the URL it prints (e.g. http://localhost:3001)

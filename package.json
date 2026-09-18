@@ -2,6 +2,7 @@
   "name": "artisan-impact",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Artisan Impact - shop, blog, and donations for a children's art program",
   "scripts": {
     "dev": "http-server . -p 8000 -c-1 -o",
