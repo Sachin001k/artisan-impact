@@ -14,7 +14,7 @@
 - ✅ **Product Filtering** — Filter by category and price range (under ₹1000)
 - ✅ **Sample Products** — 6 seed products in database (Monsoon in Marigold, Terracotta Bird Set, City of Kites, Grandmother's Garden, Woven Wall Hanging, Our Street at Dusk)
 - ✅ **Cart System** — Add to cart functionality with localStorage persistence
-- ⚠️ **Product Images** — Image URL field exists in database but currently all set to `null` (see **TODO** below)
+- ✅ **Product Images** — All 6 products now have dummy images from picsum.photos (ready to replace with real images)
 
 ### Authentication & User Accounts
 - ✅ **Supabase Auth** — Email + password sign-in/sign-up system
@@ -26,11 +26,13 @@
 
 ### Checkout & Payments
 - ✅ **Checkout Flow** — Requires sign-in before payment
-- ✅ **Razorpay Integration** — Payment processing (currently in **Test Mode**)
+- ✅ **Razorpay Integration** — Payment processing (Test Mode fully set up with API keys)
+- ✅ **Test API Keys** — Razorpay Test Key ID & Secret configured (ready for local testing)
 - ✅ **Order Creation** — Backend function creates Razorpay order server-side
 - ✅ **Payment Verification** — Backend verifies payment and writes to Supabase `orders` and `order_items` tables
 - ✅ **Order Confirmation** — Toast notification on successful payment
-- ✅ **Test Mode Functional** — Tested with Razorpay test card `4111 1111 1111 1111`
+- ✅ **Cart Clearing** — Customer cart automatically cleared after successful payment
+- ⏳ **Payment Testing** — Need to test checkout flow end-to-end (see TODO below)
 
 ### Admin Dashboard
 - ✅ **Admin Login** — Separate admin authentication (email from `admins` table)
@@ -88,58 +90,97 @@
 
 ## ⏳ TODO — Next Steps
 
-### 1. **Add Product Images** ⚠️ HIGH PRIORITY
-   - **Current Status:** All product `image_url` fields are `null`; shop displays gradient fallbacks
+### 1. **Test Payment Flow End-to-End** 🔴 HIGH PRIORITY
+   - **Current Status:** Payment infrastructure ready but untested
+   - **Tasks:**
+     1. Start local server: `vercel dev`
+     2. Open http://localhost:3000
+     3. Add 2-3 products to cart
+     4. Click Cart → "Checkout & pay"
+     5. Sign in (create test account if needed)
+     6. Complete Razorpay checkout with test card:
+        ```
+        Card: 4111 1111 1111 1111
+        Expiry: Any future date
+        CVV: Any 3 digits
+        ```
+     7. Verify:
+        - ✅ Success toast appears
+        - ✅ Order saved to Supabase `orders` table
+        - ✅ Cart cleared after payment
+        - ✅ Order appears in admin dashboard
+        - ✅ Order visible in customer's account page
+   - **Also test:**
+     - Donation flow (no sign-in required)
+     - Mobile checkout (responsive)
+     - Payment failure handling
+   - **Guide:** See `RAZORPAY_SETUP.md` for detailed test instructions
+
+### 2. **Improve Payment UI/UX** 🟡 HIGH PRIORITY
+   - **Current Status:** Functional but basic payment experience
+   - **Improvements needed:**
+     1. **Payment Progress Indicator** — Show step-by-step checkout progress
+        - Step 1: Review Cart
+        - Step 2: Shipping Details
+        - Step 3: Payment
+        - Step 4: Confirmation
+     2. **Order Summary During Checkout** — Show item list + total before payment
+     3. **Payment Status Page** — Better visual feedback during processing
+     4. **Error Handling** — User-friendly error messages instead of toast
+     5. **Loading States** — Spinners/progress indicators during payment processing
+     6. **Success Celebration** — More engaging success message with order details
+     7. **Invoice/Receipt** — Generate and email order receipt
+   - **Files to enhance:** `js/checkout.js`, `index.html` (checkout section)
+   - **See:** `PAYMENT_UI_IDEAS.md` (new file created below)
+
+### 3. **Add Product Images (Replace Dummy Images)** 🟡 MEDIUM PRIORITY
+   - **Current Status:** All 6 products have dummy picsum.photos images
    - **Available Images in `/images` folder:**
-     - `First part photo and product 200rs.jpg`
-     - `first part photo and product 650rs.jpg`
-     - `First part photo and product 950rs.jpg`
-     - `First part photo.jpg`
+     - `First part photo and product 200rs.jpg` (320 KB)
+     - `first part photo and product 650rs.jpg` (148 KB)
+     - `First part photo and product 950rs.jpg` (91 KB)
+     - `First part photo.jpg` (341 KB)
    - **Excluded images:** `logo.jpeg`, `About us Mihir photo.png` (used elsewhere)
    
-   **QUICK START — Add dummy images now (2 minutes):**
-   1. Go to **Supabase Dashboard** → your project → **SQL Editor** → **New Query**
-   2. Copy and paste the script from `sql/update-product-images.sql`
-   3. Click **Run**
-   4. Dummy images appear in shop (refresh to see them) ✨
+   **To replace dummy images:**
+   1. Option A: Upload to Supabase Storage (recommended for production)
+      - Supabase → Storage → Create bucket `products`
+      - Upload 4 images
+      - Get public URLs
+      - Update `products` table `image_url` column with Supabase URLs
    
-   This adds placeholder images from **picsum.photos** to first 3 products:
-   - `Our Street at Dusk` (₹380) → https://picsum.photos/400/300?random=1
-   - `Monsoon in Marigold` (₹1200) → https://picsum.photos/400/300?random=2
-   - `Terracotta Bird Set` (₹650) → https://picsum.photos/400/300?random=3
-
-   **Later — Replace with your actual images:**
-   1. Upload your actual images to **Supabase Storage** (create bucket `products`)
-   2. Get public URLs from Supabase (Supabase → Storage → click image → copy URL)
-   3. Replace the `picsum.photos` URLs in Supabase `products` table with your URLs
-   4. Or update `sql/update-product-images.sql` with your URLs and re-run
+   2. Option B: Use local `/images/` folder
+      - Update product rows with paths like `/images/First%20part%20photo.jpg`
+      - Requires static file serving
    
-   **Local images alternative:**
-   - Use `/images/First%20part%20photo.jpg` paths if serving from static folder
+   3. Option C: Re-run SQL script
+      - Edit `sql/update-product-images.sql` with your image URLs
+      - Run in Supabase SQL Editor
 
-   **Full guide:** See `sql/README.md` for detailed instructions
+### 4. **Razorpay Live Mode Activation** 🟡 MEDIUM PRIORITY
+   - **Current Status:** Test Mode active with API keys configured
+   - **Prerequisites:**
+     - Complete Razorpay KYC (Identity verification) → 24-48 hours
+     - Pass 1-2 test transactions ✅ (see Task 1 above)
+   
+   - **When ready for production:**
+     1. Razorpay dashboard → Settings → API Keys → **Live Keys** tab
+     2. Complete business verification (KYC)
+     3. Copy Live Key ID & Secret
+     4. Update `js/config.js` with Live Key ID
+     5. Update Vercel env vars (Production) with Live Key Secret
+     6. Redeploy: `vercel --prod`
+     7. Test with real payment
+   - **Guide:** See `RAZORPAY_CHECKLIST.md` for step-by-step
 
-### 2. **Razorpay Live Mode Activation** ⚠️ HIGH PRIORITY
-   - **Current Status:** Razorpay in Test Mode (only accepts test card `4111 1111 1111 1111`)
-   - **Required Actions:**
-     1. Go to **dashboard.razorpay.com** → Switch from "Test Mode" to "Live Mode"
-     2. Generate Live API keys → Get **Key ID** and **Key Secret**
-     3. Update `js/config.js` with live **Key ID** (safe to expose)
-     4. Update Vercel environment variables (Production) with:
-        - `RAZORPAY_KEY_ID` = live Key ID
-        - `RAZORPAY_KEY_SECRET` = live Key Secret (keep secret!)
-     5. Redeploy to production: `vercel --prod`
-     6. Test with real payment (small amount recommended first)
-   - **Status Check:** Currently can only accept test payments
-
-### 3. **Improve Product Data**
+### 5. **Improve Product Data** 🟢 LOW PRIORITY
    - Add more artist bios and descriptions to `artists` table
    - Link all products to their respective artists via `artist_id`
    - Update sample product titles to match actual artwork
    - Add more product seed data or establish upload workflow for admins
    - Consider creating admin panel for product creation/editing without database access
 
-### 4. **Email Notifications** (Optional but recommended)
+### 6. **Email Notifications** 🟢 LOW PRIORITY (Optional but recommended)
    - **Order Confirmation Email** → Send to customer after successful payment
    - **Admin Alerts** → Notify admin of new orders, donations, and reviews
    - **Volunteer Confirmation** → Confirm receipt of volunteer application
@@ -148,12 +189,12 @@
      - SendGrid or Mailgun integration
      - Gmail API (requires OAuth setup)
 
-### 5. **Domain & SSL**
+### 7. **Domain & SSL** 🟢 LOW PRIORITY
    - Currently at `vercel.app` subdomain
    - **Optional:** Add custom domain through Vercel settings
    - SSL automatically handled by Vercel
 
-### 6. **Advanced Features** (Nice-to-have)
+### 8. **Advanced Features** 🟢 LOW PRIORITY (Nice-to-have)
    - Product inventory tracking (low stock warnings)
    - Pre-order functionality for limited editions
    - Print/export order invoices as PDF
@@ -164,22 +205,23 @@
    - Wishlist functionality
    - Discount codes / coupon system
 
-### 7. **Content Updates**
+### 9. **Content Updates** 🟢 LOW PRIORITY
    - Add more Art Diaries blog posts (monthly recommended)
    - Update About page with full program description
    - Add program impact stories and student testimonials
    - Create FAQ page
    - Add privacy policy and terms of service
 
-### 8. **Testing & QA** (Before launch)
-   - ✅ Checkout flow with real Razorpay account
-   - Donation process end-to-end
-   - Mobile responsiveness on all pages
-   - Admin dashboard functionality
-   - Sign-in/account flow
-   - Product filtering and search
+### 10. **Testing & QA** 🔴 BEFORE LAUNCH
+   - ⏳ Checkout flow with test card (see Task 1)
+   - ⏳ Donation process end-to-end
+   - ⏳ Mobile responsiveness on checkout
+   - ⏳ Admin dashboard order viewing
+   - ⏳ Sign-in/account/order history flow
+   - ⏳ Product filtering and search
+   - ⏳ Error handling (failed payments, network errors)
 
-### 9. **Performance & SEO**
+### 11. **Performance & SEO** 🟢 LOW PRIORITY
    - Add meta tags for social media (Open Graph)
    - Optimize image loading (lazy loading, compression)
    - Add structured data (Schema.org for products)
@@ -196,8 +238,10 @@
 - **Tables:** products, orders, order_items, donations, volunteers, artists, posts, testimonials, admins
 
 ### Razorpay
-- **Status:** ⚠️ Test Mode active (needs Live Mode setup)
+- **Status:** ✅ Test Mode API keys configured and ready to test
 - **Test Card:** `4111 1111 1111 1111` (any future expiry, any CVV)
+- **Next:** Complete end-to-end payment testing (see TODO Task 1)
+- **Then:** Complete KYC for Live Mode → Get Live Keys → Deploy to production
 - **Next Step:** Generate live keys and activate Live Mode
 
 ### Vercel
