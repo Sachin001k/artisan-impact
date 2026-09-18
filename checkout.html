@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Artisan Impact</title>
+<link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .checkout-wrap{ max-width:760px; margin:0 auto; padding-top:150px; padding-bottom:80px; }
+  .checkout-steps{ display:flex; justify-content:center; gap:8px; margin-bottom:40px; flex-wrap:wrap; }
+  .checkout-step-pill{
+    padding:8px 16px; border-radius:999px; font-size:0.82rem; font-weight:600;
+    background:#f1efe9; color:rgba(27,38,32,0.5);
+  }
+  .checkout-step-pill.active{ background:var(--ink); color:var(--paper); }
+  .checkout-step-pill.done{ background:var(--teal); color:#fff; }
+
+  .order-summary-card{
+    background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:28px; margin-bottom:24px;
+  }
+  .order-summary-card h3{ margin:0 0 18px 0; }
+  .summary-line{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .summary-line:last-of-type{ border-bottom:none; }
+  .summary-line-title{ font-weight:600; }
+  .summary-line-sub{ font-size:0.8rem; color:rgba(27,38,32,0.55); }
+  .summary-line-price{ font-family:'IBM Plex Mono', monospace; white-space:nowrap; }
+  .summary-total-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-top:18px; margin-top:6px; border-top:2px solid var(--ink);
+    font-size:1.15rem; font-weight:700;
+  }
+
+  .checkout-empty{ text-align:center; padding:60px 20px; }
+  .checkout-empty a{ color:var(--cobalt); font-weight:600; text-decoration:none; }
+
+  .checkout-signin-note{
+    background:#fff7ea; border:1.5px solid rgba(255,176,32,0.4); border-radius:12px;
+    padding:18px 20px; margin-bottom:24px; font-size:0.9rem;
+  }
+
+  .pay-btn-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .pay-amount{ font-size:1.3rem; font-weight:700; }
+
+  .checkout-success{ text-align:center; padding:40px 20px; }
+  .success-badge{
+    width:84px; height:84px; border-radius:50%; margin:0 auto 24px;
+    background:linear-gradient(135deg, var(--poppy), #ff8a63);
+    color:#fff; font-size:42px; display:flex; align-items:center; justify-content:center;
+    animation: popIn .4s ease-out;
+  }
+  @keyframes popIn{ from{ transform:scale(0); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .success-order-id{ font-family:'IBM Plex Mono', monospace; color:rgba(27,38,32,0.6); }
+  .success-actions{ display:flex; gap:12px; justify-content:center; margin-top:30px; flex-wrap:wrap; }
+
+  .processing-overlay{
+    position:fixed; inset:0; background:rgba(27,38,32,0.75); z-index:500;
+    display:none; align-items:center; justify-content:center; backdrop-filter:blur(2px);
+  }
+  .processing-overlay.open{ display:flex; }
+  .processing-box{ background:#fff; border-radius:16px; padding:40px; text-align:center; max-width:320px; }
+  .spinner{
+    width:48px; height:48px; border:4px solid #eee; border-top:4px solid var(--poppy);
+    border-radius:50%; margin:0 auto 20px; animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <img src="images/logo.jpeg" alt="Artisan Impact" style="height:32px; width:auto; margin-right:8px;">
+      Artisan Impact
+    </a>
+    <nav class="pills">
+      <a href="index.html#shop">Shop</a>
+      <a href="index.html#stories">Art Diaries</a>
+      <a href="index.html#donate">Donate</a>
+      <a href="index.html#about">About</a>
+    </nav>
+    <div class="account-area" id="accountArea">
+      <button class="account-toggle" id="accountToggle">Sign in</button>
+    </div>
+  </div>
+</header>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-card">
+    <button class="cart-close" id="authClose">&times;</button>
+
+    <div id="authSignInScreen">
+      <h3>Welcome back</h3>
+      <p class="auth-note">Sign in to complete your purchase.</p>
+      <form id="authForm">
+        <div>
+          <label for="authEmail">Email address</label>
+          <input id="authEmail" type="email" required placeholder="you@email.com">
+        </div>
+        <div>
+          <label for="authPassword">Password</label>
+          <input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSubmit">Sign in</button>
+      </form>
+      <p class="form-note" id="authError" style="color:var(--poppy);"></p>
+      <div class="auth-footer">
+        <p>Don't have an account? <button type="button" id="switchToSignup" class="auth-link">Create one</button></p>
+      </div>
+    </div>
+
+    <div id="authSignUpScreen" style="display:none;">
+      <h3>Create your account</h3>
+      <p class="auth-note">Join Artisan Impact and support young artists.</p>
+      <form id="authSignupForm">
+        <div>
+          <label for="authName">Full name</label>
+          <input id="authName" type="text" required placeholder="Your name">
+        </div>
+        <div>
+          <label for="authPhone">Phone number</label>
+          <input id="authPhone" type="tel" required placeholder="10-digit number">
+        </div>
+        <div>
+          <label for="authEmailSignup">Email address</label>
+          <input id="authEmailSignup" type="email" required placeholder="you@email.com">
+        </div>
+        <div>
+          <label for="authPasswordSignup">Password</label>
+          <input id="authPasswordSignup" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSignupSubmit">Create account</button>
+      </form>
+      <p class="form-note" id="authSignupError" style="color:var(--poppy);"></p>
+      <div class="auth-footer">
+        <p>Already have an account? <button type="button" id="switchToSignin" class="auth-link">Sign in</button></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT PROCESSING OVERLAY -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-box">
+    <div class="spinner"></div>
+    <h4 style="margin:0 0 6px 0;">Processing payment…</h4>
+    <p style="margin:0; font-size:0.85rem; color:rgba(27,38,32,0.6);">Please don't close this window.</p>
+  </div>
+</div>
+
+<div class="checkout-wrap wrap">
+
+  <div class="checkout-steps">
+    <span class="checkout-step-pill done">1. Cart</span>
+    <span class="checkout-step-pill active" id="stepReview">2. Review &amp; pay</span>
+    <span class="checkout-step-pill" id="stepDone">3. Confirmed</span>
+  </div>
+
+  <!-- EMPTY CART STATE -->
+  <div id="checkoutEmpty" class="checkout-empty" style="display:none;">
+    <h2>Your cart is empty</h2>
+    <p>Add a few pieces first, then come back here to check out.</p>
+    <a href="index.html#shop">← Back to the shop</a>
+  </div>
+
+  <!-- REVIEW & PAY STATE -->
+  <div id="checkoutReview" style="display:none;">
+    <div class="section-head" style="margin-bottom:24px;">
+      <div class="eyebrow">Checkout</div>
+      <h2>Review your order</h2>
+    </div>
+
+    <div class="order-summary-card">
+      <h3>Items</h3>
+      <div id="checkoutItems"></div>
+      <div class="summary-total-row">
+        <span>Total</span>
+        <span id="checkoutTotal">₹0</span>
+      </div>
+    </div>
+
+    <div id="checkoutSigninNote" class="checkout-signin-note" style="display:none;">
+      You'll need to sign in before paying — click "Pay now" and we'll prompt you.
+    </div>
+
+    <div class="order-summary-card">
+      <div class="pay-btn-row">
+        <div>
+          <div style="font-size:0.8rem; color:rgba(27,38,32,0.55);">Amount to pay</div>
+          <div class="pay-amount" id="checkoutPayAmount">₹0</div>
+        </div>
+        <button class="btn btn-dark" id="payNowBtn">Pay now</button>
+      </div>
+    </div>
+
+    <p style="text-align:center; font-size:0.8rem; color:rgba(27,38,32,0.5);">
+      Payments are processed securely via Razorpay. <a href="index.html#shop" style="color:var(--cobalt);">← Continue shopping</a>
+    </p>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div id="checkoutSuccess" class="checkout-success" style="display:none;">
+    <div class="success-badge">✓</div>
+    <h2>Order confirmed!</h2>
+    <p>Thank you for supporting a young artist.</p>
+    <p class="success-order-id" id="successOrderId"></p>
+    <div class="success-actions">
+      <a href="index.html#shop" class="btn btn-primary">Continue shopping</a>
+      <a href="account.html" class="btn btn-dark">View my orders</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>© 2026 Artisan Impact. Every purchase funds an artist.</span>
+      <span>Payments via Razorpay · Data via Supabase</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script type="module" src="js/checkout-page.js"></script>
+</body>
+</html>
