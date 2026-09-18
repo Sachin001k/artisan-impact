@@ -180,10 +180,18 @@
 ### 3. **Add Product Images (Replace Dummy Images)** 🟡 MEDIUM PRIORITY
    - **Current Status:** All 6 products have dummy picsum.photos images
    - **Available Images in `/images` folder:**
-     - `First part photo and product 200rs.jpg` (320 KB)
-     - `first part photo and product 650rs.jpg` (148 KB)
-     - `First part photo and product 950rs.jpg` (91 KB)
-     - `First part photo.jpg` (341 KB)
+     - `first-part-photo-and-product-200rs.jpg` (320 KB)
+     - `first-part-photo-and-product-650rs.jpg` (148 KB)
+     - `first-part-photo-and-product-950rs.jpg` (91 KB)
+     - `first-part-photo.jpg` (341 KB)
+   - **⚠️ Renamed Sep 2026:** all files in `/images` were renamed to remove
+     spaces (e.g. `First part photo.jpg` → `first-part-photo.jpg`). `vercel
+     dev`'s static file server 404s on any filename containing a space, even
+     URL-encoded (`%20`) — confirmed by curling both forms directly. `About
+     us Mihir photo.png` → `about-us-mihir-photo.png` was the first one hit
+     (it's why the About section photo wasn't loading) and `index.html` was
+     updated to match. **Always use spaces-free filenames for anything in
+     `/images` going forward.**
    - **Excluded images:** `logo.jpeg`, `About us Mihir photo.png` (used elsewhere)
    
    **To replace dummy images:**

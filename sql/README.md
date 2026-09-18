@@ -48,10 +48,10 @@ Optional commented lines are provided to update remaining products.
 All images are located in `/images/` folder in your project root:
 
 ### Included Images (to use for products):
-- `First part photo.jpg` — Solo artisan portrait
-- `First part photo and product 200rs.jpg` — Photo with lower-priced product
-- `first part photo and product 650rs.jpg` — Photo with mid-priced product
-- `First part photo and product 950rs.jpg` — Photo with premium product
+- `first-part-photo.jpg` — Solo artisan portrait
+- `first-part-photo-and-product-200rs.jpg` — Photo with lower-priced product
+- `first-part-photo-and-product-650rs.jpg` — Photo with mid-priced product
+- `first-part-photo-and-product-950rs.jpg` — Photo with premium product
 
 ### Reserved Images (used elsewhere, don't include in products):
 - `logo.jpeg` — Used in navigation and headers
