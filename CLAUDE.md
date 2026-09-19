@@ -155,6 +155,53 @@
    - **Revisit later if:** the team decides Razorpay's popup branding is a
      dealbreaker — then build Option B (custom tabbed payment page) as a
      separate project, reusing Razorpay's JS SDK underneath for security.
+   - **⚠️ UPI tab missing (Sep 2026):** on a brand-new Razorpay account, the
+     checkout modal only showed Cards / Netbanking / Wallet — no UPI tab at
+     all. This is a **dashboard setting**, not a code issue: go to Razorpay
+     Dashboard → **Settings → Payment Methods** and toggle **UPI** on. Once
+     enabled, UPI appears as its own tab with a dynamic QR (desktop) or
+     one-tap GPay/PhonePe/Paytm buttons (mobile, if those apps are installed).
+   - **⚠️ Test card OTP never arrives:** this is expected — Test Mode only
+     works with Razorpay's official fake card `4111 1111 1111 1111` (any
+     future expiry, any 3-digit CVV, any digits for OTP if asked). A real
+     card number typed into Test Mode will never receive a real OTP because
+     nothing about a Test Mode transaction is real.
+   - **Decision (Sep 2026) — rejected a custom "personal UPI QR" system:**
+     considered letting the merchant upload their own PhonePe/GPay QR code
+     for customers to scan directly, bypassing Razorpay. **Rejected** —
+     the site would have no way to detect if/when a scan-to-pay actually
+     succeeded (no automatic order confirmation, manual reconciliation
+     forever, real risk of a customer claiming payment that never
+     happened). Razorpay's own UPI (once the toggle above is on) already
+     gives a dynamic per-order QR that's auto-verified exactly like cards —
+     strictly better, and free.
+   - **💰 Where does the money actually go?**
+     - **Test Mode (current state):** zero real money moves, ever. No card
+       is charged, no bank account is touched — it's a full simulation.
+     - **Live Mode (after completing KYC):** customer payments are collected
+       by Razorpay, then **settled to the bank account added during KYC**
+       (Razorpay Dashboard → Settings → Bank Account), typically **T+2 to
+       T+4 working days** after each transaction, minus Razorpay's fee
+       (~2% + GST per transaction). Track settlements in Razorpay Dashboard
+       → **Settlements**.
+
+### 1c. **₹1 Test Payment Product** ✅ READY TO USE
+   - **Purpose:** a cheap, safe way to confirm payments really work once you
+     switch to Razorpay Live Mode, without risking a real product's price.
+     ₹1 (100 paise) is Razorpay's minimum chargeable amount — the cheapest
+     possible real-money test.
+   - **Setup:** run `sql/test-payment-product.sql` in Supabase SQL Editor.
+     It repurposes the existing "Grandmother's Garden" row into:
+     - Title: `Test Payment — Do Not Buy`
+     - Price: `₹1`
+     - Image: `images/test-payment.svg` (a plain "TEST PAYMENT — ₹1" graphic,
+       created for this purpose — not a real product photo)
+   - **To revert** back to the real "Grandmother's Garden" listing, run the
+     commented-out `UPDATE` at the bottom of the same SQL file.
+   - **Use it to test:** in Test Mode with fake cards/UPI first (free), then
+     once in Live Mode, do one real ₹1 purchase yourself to confirm money
+     actually settles to your bank account before trusting it with real
+     customers.
 
 ### 2. **Improve Payment UI/UX** 🟡 MEDIUM PRIORITY
    - **Current Status:** ✅ Dedicated checkout page built (Sep 2026)
@@ -224,6 +271,27 @@
      6. Redeploy: `vercel --prod`
      7. Test with real payment
    - **Guide:** See `RAZORPAY_CHECKLIST.md` for step-by-step
+
+### 4b. **Delivery System** 🔵 DEFERRED — revisit after payments are confirmed working
+   - **Status:** Not started, and deliberately deferred (Sep 2026) until
+     Task 1 (end-to-end payment testing) and Task 4 (Live Mode) are both
+     confirmed working — no point building shipping logic on top of a
+     payment flow that isn't verified yet.
+   - **What's missing today:** no shipping address is collected anywhere
+     in the checkout flow (see Task 2's "Shipping/address collection" note),
+     and there's no concept of order status beyond `pending`/`paid`/`failed`
+     in the `orders` table — nothing tracks "packed", "shipped", "delivered".
+   - **When picked back up, will likely need:**
+     1. An address form step in `checkout.html` (name, address, city, pin
+        code, phone) saved onto the order
+     2. A `shipping_status` column (or a separate `shipments` table) with
+        states like `processing` → `shipped` → `delivered`
+     3. Admin dashboard controls to update shipping status per order
+     4. Customer-facing status on their order in `account.html`
+     5. Optional: courier integration (Shiprocket, Delhivery, etc.) or just
+        manual status updates to start
+   - **Not scoped in detail yet** — this is a placeholder to revisit, not a
+     ready-to-build spec.
 
 ### 5. **Improve Product Data** 🟢 LOW PRIORITY
    - Add more artist bios and descriptions to `artists` table
