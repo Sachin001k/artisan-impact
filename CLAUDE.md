@@ -272,26 +272,69 @@
      7. Test with real payment
    - **Guide:** See `RAZORPAY_CHECKLIST.md` for step-by-step
 
-### 4b. **Delivery System** 🔵 DEFERRED — revisit after payments are confirmed working
-   - **Status:** Not started, and deliberately deferred (Sep 2026) until
-     Task 1 (end-to-end payment testing) and Task 4 (Live Mode) are both
-     confirmed working — no point building shipping logic on top of a
-     payment flow that isn't verified yet.
-   - **What's missing today:** no shipping address is collected anywhere
-     in the checkout flow (see Task 2's "Shipping/address collection" note),
-     and there's no concept of order status beyond `pending`/`paid`/`failed`
-     in the `orders` table — nothing tracks "packed", "shipped", "delivered".
-   - **When picked back up, will likely need:**
-     1. An address form step in `checkout.html` (name, address, city, pin
-        code, phone) saved onto the order
-     2. A `shipping_status` column (or a separate `shipments` table) with
-        states like `processing` → `shipped` → `delivered`
-     3. Admin dashboard controls to update shipping status per order
-     4. Customer-facing status on their order in `account.html`
-     5. Optional: courier integration (Shiprocket, Delhivery, etc.) or just
-        manual status updates to start
-   - **Not scoped in detail yet** — this is a placeholder to revisit, not a
-     ready-to-build spec.
+### 4b. **Delivery Address System (Flipkart/Amazon-style)** 🔴 PROMOTED TO ACTIVE PLANNING (Sep 2026)
+   - **Status:** Previously deferred; owner has now asked for this to be
+     planned in detail so it's ready to build. Not yet implemented — this
+     is the spec to build from next.
+   - **What's missing today:** `checkout.html` goes straight from "Review
+     cart" to "Pay" — no address is ever collected, so there's currently no
+     way to know where to ship a physical order. `orders` table has no
+     address field at all.
+   - **Target flow (matches Flipkart/Amazon):**
+     ```
+     1. Cart  →  2. Delivery Address  →  3. Review & Pay  →  4. Confirmed
+     ```
+     Step 2 (new): if the signed-in customer has saved addresses, show them
+     as a picklist (radio buttons) with "Deliver here" per address, plus an
+     "+ Add new address" option — exactly like Amazon's address step. If no
+     saved addresses, show the form directly. Step 3 (existing "Review &
+     pay") then also shows the selected delivery address above the order
+     summary, with a "Change" link back to step 2.
+   - **Database changes needed:**
+     ```sql
+     create table if not exists addresses (
+       id uuid primary key default gen_random_uuid(),
+       user_id uuid references auth.users(id) not null,
+       full_name text not null,
+       phone text not null,
+       line1 text not null,
+       line2 text,
+       city text not null,
+       state text not null,
+       pincode text not null,
+       is_default boolean default false,
+       created_at timestamptz default now()
+     );
+     alter table addresses enable row level security;
+     -- customers can only read/write their own addresses (auth.uid() = user_id)
+
+     alter table orders add column if not exists shipping_address jsonb;
+     -- snapshot of the address used, frozen at order time (so editing/
+     -- deleting a saved address later doesn't change past orders)
+     ```
+   - **Code changes needed:**
+     1. `checkout.html` — add the new "Delivery Address" step markup
+        (picklist + add-new-address form) between the existing Cart-review
+        and Pay sections; renumber the step pills
+     2. `js/checkout-page.js` — load the signed-in user's addresses from
+        Supabase, render the picklist, handle "add new address" (insert
+        into `addresses`), and include the chosen address in the payload
+        sent to `/api/verify-payment` so it gets stored in `orders.shipping_address`
+     3. `api/verify-payment.js` — accept `shipping_address` in the request
+        body and write it into the new `orders.shipping_address` column
+     4. `account.html` / `js/account.js` — let a customer manage
+        (add/edit/delete) their saved addresses, and show the delivery
+        address on each past order
+     5. `admin.html` / `js/admin-dashboard.js` — show the shipping address
+        on each order in the Orders section (admin needs this to actually
+        ship anything)
+   - **Depends on:** nothing blocking — can be built independently of the
+     payment debugging in Task 1, since it only touches the review step
+     before payment, not the Razorpay integration itself.
+   - **Not included in this pass (future, see old Task 4b content):**
+     shipment status tracking (processing/shipped/delivered), courier
+     integration — address collection is the prerequisite for those, not
+     the same task.
 
 ### 5. **Improve Product Data** 🟢 LOW PRIORITY
    - Add more artist bios and descriptions to `artists` table
@@ -299,6 +342,61 @@
    - Update sample product titles to match actual artwork
    - Add more product seed data or establish upload workflow for admins
    - Consider creating admin panel for product creation/editing without database access
+
+### 5b. **Admin Homepage Content Editor (Hero + About Me sections)** 🔴 ACTIVE PLANNING (Sep 2026)
+   - **Goal (confirmed with owner):** let the admin change the homepage's
+     main headline/story text and the "About Me" bio + founder photo from
+     the admin dashboard — no more editing `index.html` by hand for these.
+   - **In scope:** the **Hero** section (`index.html` ~line 124-140: eyebrow
+     "ARTISAN IMPACT", headline "It's about the story, not the product.",
+     body paragraph, hero image) and the **About Me** section (~line
+     391-405: "Hi, I'm Mihir" heading, 4 bio paragraphs, founder photo).
+   - **Not in scope for this task:** products, blog posts — those are
+     separate, already-existing management surfaces (see Task 5 and the
+     Art Diaries system).
+   - **Database changes needed:**
+     ```sql
+     create table if not exists site_content (
+       key text primary key,        -- 'hero' | 'about'
+       title text,
+       body text,                   -- can hold multiple paragraphs; render
+                                     -- by splitting on blank lines, or store
+                                     -- as an array/jsonb if richer formatting
+                                     -- is needed later
+       image_url text,
+       updated_at timestamptz default now()
+     );
+     alter table site_content enable row level security;
+     create policy "public read site_content" on site_content for select using (true);
+     -- writes restricted to admins only (reuse the existing is_admin() check
+     -- already used elsewhere in admin.js)
+
+     insert into site_content (key, title, body, image_url) values
+       ('hero', 'It''s about the story, not the product.',
+        'I am currently partnered with Jai Vakeel Foundation, which has given me the opportunity to work with their artisans and bring this idea to life. 50% of the profits from Artisan Impact are donated back to Jai Vakeel, allowing the project to contribute directly to the community that makes it possible.',
+        null),
+       ('about', 'Hi, I''m Mihir',
+        E'I''m a student at Aditya Birla World Academy, and Artisan Impact is a project that is very personal to me.\n\nFor as long as I can remember...',
+        '/images/about-us-mihir-photo.png')
+     on conflict (key) do nothing;
+     ```
+   - **Code changes needed:**
+     1. `index.html` — replace the hardcoded hero/about markup with empty
+        containers (`id="heroContent"`, `id="aboutContent"`) that JS fills in
+     2. New `js/site-content.js` — fetches both rows from `site_content` on
+        page load and renders them into those containers (same pattern as
+        `js/blog.js` fetching posts)
+     3. `admin.html` — new sidebar section "Homepage Content" with two forms
+        (Hero, About Me): title field, body textarea, image upload
+     4. `js/admin-dashboard.js` — load current `site_content` rows into the
+        forms; on save, upload the new image to Supabase Storage (if
+        changed) and `UPDATE site_content SET ... WHERE key = '...'`
+   - **Image upload:** needs a public Supabase Storage bucket (e.g.
+     `site-content`) — admin picks a file, it uploads to Storage, the
+     returned public URL is saved into `site_content.image_url`. Same
+     mechanism Task 3's "Supabase Storage for production images" already
+     recommends, so this can share that setup.
+   - **Depends on:** nothing blocking — independent of payment work.
 
 ### 6. **Email Notifications** 🟢 LOW PRIORITY (Optional but recommended)
    - **Order Confirmation Email** → Send to customer after successful payment
