@@ -35,6 +35,14 @@ async function handleDonate(e) {
     return
   }
 
+  if (typeof Razorpay === 'undefined') {
+    alert(
+      'The payment window could not load. This is usually caused by an ad blocker or privacy extension ' +
+      '(uBlock, Brave Shields, etc.) blocking checkout.razorpay.com — please disable it for this site and try again.'
+    )
+    return
+  }
+
   const options = {
     key: RAZORPAY_KEY_ID,
     amount: order.amount,
@@ -69,5 +77,10 @@ async function handleDonate(e) {
     },
   }
 
-  new Razorpay(options).open()
+  try {
+    new Razorpay(options).open()
+  } catch (err) {
+    console.error(err)
+    alert('The payment window could not open. Please refresh the page and try again.')
+  }
 }

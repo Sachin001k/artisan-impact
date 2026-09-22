@@ -32,6 +32,21 @@
 - ✅ **Payment Verification** — Backend verifies payment and writes to Supabase `orders` and `order_items` tables
 - ✅ **Order Confirmation** — Toast notification on successful payment
 - ✅ **Cart Clearing** — Customer cart automatically cleared after successful payment
+- ✅ **Payment Security Hardening (Sep 2026)** — `api/verify-payment.js` now
+  fetches the real order from Razorpay's API and cross-checks the actual
+  paid amount before recording anything, instead of trusting client-submitted
+  cart/amount values; added idempotency checks so a retried callback can't
+  create duplicate orders/donations. Verified live: a forged-but-signature-valid
+  request for an order that was never actually paid is now correctly rejected
+  (`400 Order amount mismatch`) — previously this would have silently created
+  a fake "paid" order.
+- ✅ **Razorpay SDK Load Failure Handling (Sep 2026)** — `js/checkout-page.js`
+  and `js/donate.js` now detect if `checkout.razorpay.com`'s script was
+  blocked (common with ad blockers/privacy extensions like uBlock or Brave
+  Shields) and show a clear message instead of the Pay button silently doing
+  nothing. **This is the most likely explanation for "payment not working"**
+  reported after the backend itself tested fine via curl — curl can't detect
+  a client-side script block.
 - ⏳ **Payment Testing** — Need to test checkout flow end-to-end (see TODO below)
 
 ### Admin Dashboard
@@ -445,6 +460,35 @@
    - Add structured data (Schema.org for products)
    - Monitor Vercel Analytics
    - Set up error tracking (e.g., Sentry)
+
+### 12. **Full Codebase Audit Findings (Sep 2026)** — remaining minor items
+   A full-repo review was run to answer "check if any sections need
+   improvement." The Critical/Important findings were fixed immediately
+   (see below); these are the lower-priority leftovers.
+   - ✅ **Fixed immediately:**
+     - Razorpay SDK load-failure detection (see Checkout & Payments above)
+     - `api/verify-payment.js` amount-tampering + idempotency hardening
+     - `js/admin-dashboard.js` querying wrong column names (`donor_name` →
+       `donor_email`, `comment` → `quote`) — this silently emptied the
+       admin dashboard's "Recent Donations" and "Reviews Queue" widgets
+       even when real data existed, because the failed Supabase query was
+       never surfaced as an error
+     - Empty-cart click on "Checkout & pay" now shows a message instead of
+       doing nothing
+     - Deleted dead code: `admin-old.html` + `js/admin.js` — confirmed via
+       repo-wide grep that nothing referenced either file; the live admin
+       is `admin.html` + `js/admin-dashboard.js`
+   - 🟢 **Still open (low priority, cosmetic/DX, not urgent):**
+     1. Dropdown-menu-toggle logic (~15 lines) is copy-pasted identically
+        across `main.js`, `account.js`, `admin-products.js` — could extract
+        to a shared module
+     2. `js/checkout.js` (redirects to checkout.html) and
+        `js/checkout-page.js` (the actual checkout page logic) have
+        confusingly similar names for very different scopes — consider
+        renaming one for clarity (e.g. `checkout-redirect.js`)
+     3. No generic "content block" pattern exists yet for admin-editable
+        homepage sections — this is exactly what Task 5b's `site_content`
+        table is designed to introduce, so no separate action needed here
 
 ---
 

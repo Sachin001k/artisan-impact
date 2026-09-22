@@ -441,7 +441,7 @@ async function loadRecentOrders() {
 async function loadRecentDonations() {
   const { data: donations } = await supabase
     .from('donations')
-    .select('id, amount_inr, donor_name, created_at')
+    .select('id, amount_inr, donor_email, created_at')
     .order('created_at', { ascending: false })
     .limit(5)
 
@@ -453,7 +453,7 @@ async function loadRecentDonations() {
 
   list.innerHTML = donations.map(donation => `
     <div class="activity-item">
-      <div class="activity-item-title">${donation.donor_name || 'Anonymous'}</div>
+      <div class="activity-item-title">${donation.donor_email || 'Anonymous'}</div>
       <div class="activity-item-meta">₹${donation.amount_inr} • ${new Date(donation.created_at).toLocaleDateString()}</div>
     </div>
   `).join('')
@@ -463,7 +463,7 @@ async function loadRecentDonations() {
 async function loadReviewsQueue() {
   const { data: testimonials } = await supabase
     .from('testimonials')
-    .select('id, customer_name, rating, comment, created_at')
+    .select('id, customer_name, rating, quote, created_at')
     .eq('approved', false)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -477,7 +477,7 @@ async function loadReviewsQueue() {
   list.innerHTML = testimonials.map(review => `
     <div class="activity-item">
       <div class="activity-item-title">⭐ ${review.rating} • ${review.customer_name || 'Anonymous'}</div>
-      <div class="activity-item-meta">${review.comment?.substring(0, 50)}...</div>
+      <div class="activity-item-meta">${review.quote?.substring(0, 50)}...</div>
     </div>
   `).join('')
 }
