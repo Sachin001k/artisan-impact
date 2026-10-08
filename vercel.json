@@ -1,7 +1,32 @@
 {
-  "rewrites": [
-    { "source": "/admin$", "destination": "/admin.html" },
-    { "source": "/admin/products$", "destination": "/admin-products.html" }
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/admin-products", "destination": "/admin/products", "permanent": true }
   ],
-  "cleanUrls": true
+  "rewrites": [
+    { "source": "/admin/products", "destination": "/admin-products.html" }
+  ],
+  "headers": [
+    {
+      "source": "/images/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/(css|js)/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=300, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    }
+  ]
 }

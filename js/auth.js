@@ -37,7 +37,8 @@ export function signUp(email, password, { fullName, phone } = {}) {
   return supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, phone } },
+    // phone stored as plain 10 digits — used to prefill delivery addresses + Razorpay
+    options: { data: { full_name: fullName?.trim(), phone: (phone || '').replace(/\D/g, '').slice(-10) } },
   })
 }
 
@@ -57,7 +58,8 @@ export function getInitials(user) {
 export function openAuthModal(note) {
   const modal = document.getElementById('authModal')
   if (!modal) return
-  if (note) document.getElementById('authNote').textContent = note
+  const noteEl = document.querySelector('#authSignInScreen .auth-note')
+  if (note && noteEl) noteEl.textContent = note
   document.getElementById('authError').textContent = ''
   modal.classList.add('open')
 }
@@ -153,6 +155,10 @@ export function initAuthUI() {
     signUpForm.reset()
     closeAuthModal()
     switchToSignIn()
+  })
+
+  document.getElementById('authPhone')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10)
   })
 
   onAuthChange(renderAccountArea)

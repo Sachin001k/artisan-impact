@@ -1,5 +1,8 @@
 import { supabase } from './supabaseClient.js'
+import { initDropdownMenu } from './nav.js'
 import { getUser } from './auth.js'
+import { uploadImage } from './upload.js'
+import { escapeHtml } from './utils.js'
 
 let currentEditId = null
 let artists = []
@@ -10,43 +13,25 @@ const addBtn = document.getElementById('addProductBtn')
 const cancelBtn = document.getElementById('cancelBtn')
 const logoutBtn = document.getElementById('logoutBtn')
 
-// Dropdown menu toggle
-const menuToggle = document.getElementById('menuToggle')
-const dropdownMenu = document.getElementById('dropdownMenu')
-if (menuToggle) {
-  menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation()
-    dropdownMenu.classList.toggle('open')
-  })
-  dropdownMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      dropdownMenu.classList.remove('open')
-    })
-  })
-  document.addEventListener('click', (e) => {
-    if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-      dropdownMenu.classList.remove('open')
-    }
-  })
-}
+initDropdownMenu()
 
 async function checkAdmin() {
   const user = await getUser()
   if (!user) {
-    window.location.href = 'index.html'
+    window.location.href = '/'
     return
   }
   const { data: isAdmin } = await supabase.rpc('is_admin')
   if (!isAdmin) {
     alert('Access denied.')
-    window.location.href = 'index.html'
+    window.location.href = '/'
     return
   }
   document.getElementById('adminUser').textContent = user.email
   logoutBtn.addEventListener('click', async (e) => {
     e.preventDefault()
     await supabase.auth.signOut()
-    window.location.href = 'index.html'
+    window.location.href = '/'
   })
 }
 
@@ -97,8 +82,8 @@ async function loadProducts() {
           .map(
             (p) => `
           <tr>
-            <td>${p.title}</td>
-            <td>${p.artists?.name || '—'}</td>
+            <td>${escapeHtml(p.title)}</td>
+            <td>${escapeHtml(p.artists?.name || '—')}</td>
             <td>₹${p.price_inr}</td>
             <td><span style="text-transform:capitalize;">${p.category}</span></td>
             <td>
@@ -129,14 +114,19 @@ window.editProduct = async (id) => {
   document.getElementById('productPrice').value = product.price_inr
   document.getElementById('productCategory').value = product.category
   document.getElementById('productImage').value = product.image_url || ''
+  document.getElementById('productImageFile').value = ''
   modal.classList.add('open')
 }
 
 window.deleteProduct = async (id) => {
   if (!confirm('Are you sure? This cannot be undone.')) return
-  const { error } = await supabase.from('products').delete().eq('id', id)
-  if (error) {
-    alert('Error deleting product.')
+  const { data: deleted, error } = await supabase.from('products').delete().eq('id', id).select('id')
+  if (error || !deleted?.length) {
+    alert(
+      error?.code === '23503'
+        ? 'This product has already been ordered, so it can\'t be deleted (past orders still point to it).'
+        : 'Error deleting product. ' + (error?.message || 'Not allowed — run sql/stats-and-images.sql in Supabase.')
+    )
     return
   }
   loadProducts()
@@ -159,14 +149,34 @@ form.addEventListener('submit', async (e) => {
   const artistId = document.getElementById('productArtist').value
   const price = Number(document.getElementById('productPrice').value)
   const category = document.getElementById('productCategory').value
-  const imageUrl = document.getElementById('productImage').value || null
+  let imageUrl = document.getElementById('productImage').value.trim() || null
+  const imageFile = document.getElementById('productImageFile').files[0]
+  const saveBtn = form.querySelector('button[type="submit"]')
+
+  if (imageFile) {
+    saveBtn.disabled = true
+    saveBtn.textContent = 'Uploading photo…'
+    try {
+      imageUrl = await uploadImage(imageFile, 'products')
+    } catch (err) {
+      alert('Photo upload failed: ' + err.message + '\n\nIf this keeps happening, run sql/stats-and-images.sql in Supabase.')
+      return
+    } finally {
+      saveBtn.disabled = false
+      saveBtn.textContent = 'Save'
+    }
+  }
 
   let error
   if (currentEditId) {
-    ;({ error } = await supabase
+    const artistName = artists.find((a) => a.id === artistId)?.name
+    let updated
+    ;({ data: updated, error } = await supabase
       .from('products')
-      .update({ title, artist_id: artistId, price_inr: price, category, image_url: imageUrl })
-      .eq('id', currentEditId))
+      .update({ title, artist_id: artistId, ...(artistName && { artist: artistName }), price_inr: price, category, image_url: imageUrl })
+      .eq('id', currentEditId)
+      .select('id'))
+    if (!error && !updated?.length) error = { message: 'Not allowed — run sql/stats-and-images.sql in Supabase to give admins edit access.' }
   } else {
     // For adding, we still need the old `artist` text field for backwards compat
     const artistName = artists.find((a) => a.id === artistId)?.name || 'Unknown'
@@ -188,11 +198,9 @@ form.addEventListener('submit', async (e) => {
   loadProducts()
 })
 
-modal.querySelector('.modal-overlay') === modal
-  ? null
-  : modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.remove('open')
-    })
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) modal.classList.remove('open')
+})
 
 ;(async () => {
   await checkAdmin()

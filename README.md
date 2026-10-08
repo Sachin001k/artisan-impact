@@ -6,38 +6,41 @@ Static frontend + Vercel serverless backend + Supabase database + Razorpay payme
 ## Project structure
 
 ```
-index.html            → homepage markup (shop, blog, mentors, donate, testimonials, etc.)
-artist.html            → one artist's bio + printable QR code + their products
-post.html               → a single Art Diaries blog entry
-admin.html              → password-protected dashboard (orders, donations, reviews, etc.)
-css/style.css          → styling
+index.html             → homepage (shop, donate, reviews, about) — served at /
+checkout.html          → /checkout: delivery address (with map) → pay → confirmed
+account.html           → /account: order history + delivery status, saved addresses
+artist.html, post.html → /artist?id=…, /post?slug=…
+admin.html             → /admin: statistics, orders to ship, site images
+admin-products.html    → /admin/products: add / edit / delete products
+css/                   → style.css (site), address.css (address form), admin-dashboard.css
 js/
-  supabaseClient.js     → Supabase connection (fill in your keys)
-  config.js              → Razorpay public key (fill in)
-  cart.js                 → cart state (localStorage) + logs "added to cart" events
-  shop.js                 → loads products from Supabase, renders grid + filters
-  auth.js                 → Supabase Auth: sign in/up/out + the sign-in modal
-  checkout.js             → requires sign-in → cart → Razorpay → verify → order confirmed
-  donate.js               → custom-amount donation → Razorpay → verify (no sign-in required)
-  volunteer.js            → volunteer form → Supabase insert
-  blog.js                  → loads Art Diaries posts onto the homepage
-  post.js                  → loads a single Art Diaries post (post.html)
-  artist.js                → loads an artist's bio + products + QR code (artist.html)
-  testimonials.js          → loads approved reviews + handles the review form
-  admin.js                 → admin login + dashboard data (admin.html)
-  main.js                  → wires everything up on page load
+  supabaseClient.js    → Supabase connection (public anon key)
+  config.js            → Razorpay public key
+  main.js              → homepage wiring
+  shop.js, cart.js     → product grid, cart drawer (localStorage)
+  checkout-button.js   → cart drawer "Checkout & pay" → /checkout
+  checkout-page.js     → /checkout steps + Razorpay
+  addresses.js         → saved-address data + display helpers
+  address-form.js      → address form with map (Leaflet + OpenStreetMap, lazy-loaded)
+  auth.js, nav.js      → sign-in modal, header dropdown
+  account.js           → /account
+  admin-dashboard.js   → /admin
+  site-images.js, upload.js → admin-changeable homepage images
+  track.js             → anonymous visit counting for admin statistics
+  donate.js, testimonials.js, blog.js, post.js, artist.js, volunteer.js
+  utils.js             → escapeHtml, formatINR, toast
 api/
-  create-order.js        → Vercel function: creates a Razorpay order (server-side)
-  verify-payment.js       → Vercel function: verifies payment + writes to Supabase
-sql/schema.sql          → run this once in Supabase to create your tables
-.github/workflows/supabase-keepalive.yml → pings Supabase so it doesn't pause
+  create-order.js      → prices the cart, checks sign-in + address, creates the Razorpay order
+  verify-payment.js    → verifies payment, saves order + shipping address
+  _pricing.js          → shared server helpers (not an endpoint)
+scripts/dev-server.js  → `npm run dev`: site + api/ locally, clean URLs
+sql/                   → run in Supabase SQL Editor (see sql/README.md)
+PAYMENTS.md            → testing payments + going live
 ```
 
-The `api/` folder only works when served through Vercel (locally via `vercel dev`,
-or once deployed). Opening `index.html` directly in a browser will NOT run the
-checkout backend — the shop grid and volunteer form will still work since those
-talk to Supabase directly, but "Checkout & pay" and "Donate" will fail until you
-run it through Vercel.
+The `api/` folder runs locally through `npm run dev` (see step 4) and on Vercel
+once deployed. Opening `index.html` directly as a file will NOT run the checkout
+backend — "Checkout & pay" and "Donate" need one of those two.
 
 ## 1. Supabase setup
 
@@ -109,21 +112,29 @@ separate from the site-wide `admin.html` dashboard.
 
 ### Admin dashboard
 
-`admin.html` shows paid orders, revenue, donations, volunteer signups,
-"added to cart" activity by product, and reviews (with an Approve button for
-pending ones) — all read live from Supabase.
+`admin.html` (also at `/admin`) has three sections:
+
+- **Statistics** — one card showing how many people visited the site, added
+  something to their cart, and bought paintings, for this month and all time
+- **Orders** — every order with search, status filter and item details
+- **Site Images** — upload a new image for the homepage hero, About Me photo,
+  the "Process to Product" cards, and every product photo. Uploads go to the
+  `site-images` Supabase Storage bucket. To make another spot on the page
+  changeable, add it to `IMAGE_SLOTS` in `js/site-images.js` and put
+  `data-image-slot="<key>"` on that element in `index.html`.
+
+**Run `sql/stats-and-images.sql` in the Supabase SQL Editor once** — it creates
+the visit tracking table, the stats function, the image bucket, and gives admins
+permission to edit products (without it, product edits were silently blocked).
 
 Only emails listed in the `admins` table (seeded in `schema.sql` with
-`admin@gmail.com`) can see the dashboard; everyone else who signs in there
-gets "This account doesn't have admin access." To use it:
+`admin@gmail.com`) can see the dashboard. To use it:
 
-1. Open `admin.html`, use the **Create account** tab to sign up with
-   `admin@gmail.com` (or whichever email you seeded into `admins`) and a
-   password. Confirm the email if your project requires it.
-2. Sign in — you should land on the dashboard.
-3. To add more admins later, no code changes needed: Supabase → **Table
-   Editor** → `admins` → insert a row with the new email (they still need to
-   create their own account with that email via the same Create account tab).
+1. Create an account with that email from the homepage (Sign in → Create one).
+   Confirm the email if your project requires it.
+2. Open `/admin` and sign in.
+3. To add more admins later: Supabase → **Table Editor** → `admins` → insert a
+   row with the new email.
 
 ## 2. Razorpay setup
 
@@ -150,42 +161,27 @@ Fill in `.env` with:
 
 ## 4. Test it locally
 
-Install dependencies and the Vercel CLI:
-
 ```bash
 npm install
-npm i -g vercel
+npm run dev
 ```
 
-Link this folder to a Vercel project (creates a `.vercel` folder, harmless):
-
-```bash
-vercel link
-```
-
-Run everything locally, frontend + backend functions together:
-
-```bash
-vercel dev
-```
-
-It'll print a local URL (usually `http://localhost:3000`). Open that — `vercel dev`
-automatically reads your `.env` file, so `/api/create-order` and `/api/verify-payment`
-will work exactly like they will in production.
+`npm run dev` starts `scripts/dev-server.js`, which serves the site **and** runs
+the `api/` payment functions (it reads `.env` automatically), so
+checkout and donations work locally — no Vercel CLI needed. It opens
+`http://localhost:8000` in your browser. URLs never show `.html` (`/checkout`,
+`/account`, `/admin`) — old `.html` links redirect; if port 8000 is already taken by
+something else, it uses the next free port and prints the URL.
+(`npm start` does the same without opening a browser.)
 
 Test the flow:
 1. Add a couple of products to cart → open the cart drawer → Checkout & pay
-2. If you're not signed in, the sign-in modal opens instead — create an
-   account (or sign in), then click Checkout & pay again
+2. Sign in (or create an account) on the checkout page, then click "Pay now"
 3. Razorpay's test checkout opens — use their test card `4111 1111 1111 1111`,
    any future expiry, any CVV, any name
-4. On success you should see the confirmation toast, and a new row in your
-   Supabase `orders` and `order_items` tables
-5. Try the donate form and the volunteer form the same way (no sign-in needed)
-
-If you just want to eyeball the design without testing payments, `npx serve .`
-also works, but the checkout/donate buttons won't complete without `vercel dev`
-or a real deployment.
+4. You should see the in-page confirmation, and a new row in your Supabase
+   `orders` and `order_items` tables
+5. Try the donate form the same way (no sign-in needed)
 
 ## 5. Push to GitHub
 

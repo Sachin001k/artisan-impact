@@ -1,0 +1,5 @@
+# Local-only files that shouldn't be deployed as public static files
+scripts/
+sql/
+*.md
+.env*

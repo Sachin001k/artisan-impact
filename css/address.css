@@ -1,0 +1,41 @@
+/* Address form with map — used on /checkout and /account (see js/address-form.js) */
+.address-form{ display:flex; flex-direction:column; gap:14px; }
+.address-form label{ opacity:0.85; }
+.address-form .optional{ text-transform:none; letter-spacing:0; opacity:0.7; }
+.address-form input, .address-form select{ background:#fff; }
+
+.address-map-wrap{ position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+.address-map{ height:260px; background:#e8e4d8; z-index:0; }
+.address-locate-btn{
+  position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:500;
+  padding:10px 18px; font-size:0.85rem; box-shadow:0 8px 20px rgba(0,0,0,0.25); white-space:nowrap;
+}
+.address-locate-btn:hover{ transform:translateX(-50%) translateY(-2px); }
+.address-map-status{ font-size:0.85rem; color:rgba(27,38,32,0.75); margin-top:-4px; }
+
+.receiver-line{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  background:#fbf9f3; border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:0.92rem;
+}
+.receiver-label{
+  font-family:'IBM Plex Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em;
+  color:rgba(27,38,32,0.7); margin-right:6px;
+}
+.receiver-change{ background:none; border:none; padding:0; color:var(--cobalt); font-weight:600; font-family:inherit; font-size:0.88rem; cursor:pointer; }
+.address-default{
+  display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0;
+  font-family:'Work Sans',sans-serif; font-size:0.9rem; opacity:1;
+}
+.address-default input{ width:auto; accent-color:var(--poppy); }
+.address-error{
+  background:rgba(230,58,46,0.08); border:1px solid rgba(230,58,46,0.3); color:#a8261c;
+  border-radius:10px; padding:10px 12px; font-size:0.88rem;
+}
+.address-actions{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+.btn-outline-dark{ border-color:var(--ink); color:var(--ink); background:#fff; }
+.btn-outline-dark:hover{ background:var(--ink); color:var(--paper); }
+
+@media(max-width:640px){
+  .address-map{ height:220px; }
+  .address-actions .btn{ flex:1; justify-content:center; }
+}

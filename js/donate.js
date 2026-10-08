@@ -23,15 +23,15 @@ async function handleDonate(e) {
     const res = await fetch('/api/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: amount * 100, receipt: `donation_${Date.now()}` }),
+      body: JSON.stringify({ type: 'donation', amount: amount * 100, receipt: `donation_${Date.now()}` }),
     })
-    order = await res.json()
+    order = await res.json().catch(() => null)
   } catch (err) {
     console.error(err)
   }
 
   if (!order || !order.id) {
-    alert('Could not start donation. Make sure the API is running (see README) and try again.')
+    alert(order?.error ? `Could not start donation: ${order.error}` : 'Could not start donation. Please try again in a moment.')
     return
   }
 
@@ -53,22 +53,27 @@ async function handleDonate(e) {
     prefill: { email },
     theme: { color: '#E8A23B' },
     handler: async function (response) {
-      const verifyRes = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          amount: amount * 100,
-          customer_email: email,
-          type: 'donation',
-        }),
-      })
-      const result = await verifyRes.json()
+      let result = null
+      try {
+        const verifyRes = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            customer_email: email,
+            type: 'donation',
+          }),
+        })
+        result = await verifyRes.json().catch(() => null)
+      } catch (err) {
+        console.error(err)
+      }
       const toast = document.getElementById('toast')
-      if (result.verified) {
+      if (result?.verified) {
         toast.textContent = 'Thank you for your donation!'
+        e.target.reset()
       } else {
         toast.textContent = 'Something went wrong verifying the donation.'
       }
@@ -78,7 +83,12 @@ async function handleDonate(e) {
   }
 
   try {
-    new Razorpay(options).open()
+    const rzp = new Razorpay(options)
+    // Razorpay shows its own retry screen on failure, so just log it here
+    rzp.on('payment.failed', (res) => {
+      console.warn('Payment failed:', res.error?.description)
+    })
+    rzp.open()
   } catch (err) {
     console.error(err)
     alert('The payment window could not open. Please refresh the page and try again.')

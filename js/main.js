@@ -1,17 +1,22 @@
 import { loadProducts, filterProducts } from './shop.js'
-import { renderCartBadge, renderCartDrawer } from './cart.js'
-import { initCheckout } from './checkout.js'
+import { renderCartBadge, openCartDrawer, closeCartDrawer } from './cart.js'
+import { initCheckoutButton } from './checkout-button.js'
+import { initDropdownMenu } from './nav.js'
 import { initDonate } from './donate.js'
 import { initVolunteerForm } from './volunteer.js'
 import { loadStories } from './blog.js'
 import { loadTestimonials, initTestimonialForm } from './testimonials.js'
 import { initAuthUI } from './auth.js'
+import { trackVisit } from './track.js'
+import { loadSiteImages } from './site-images.js'
 
 document.addEventListener('DOMContentLoaded', () => {
+  trackVisit()
+  loadSiteImages()
   loadProducts()
   renderCartBadge()
   initAuthUI()
-  initCheckout()
+  initCheckoutButton()
   initDonate()
   initVolunteerForm()
   loadStories()
@@ -26,32 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  const cartToggle = document.getElementById('cartToggle')
-  const cartDrawer = document.getElementById('cartDrawer')
-  cartToggle.addEventListener('click', () => {
-    cartDrawer.classList.toggle('open')
-    renderCartDrawer()
-  })
-  document.getElementById('cartClose').addEventListener('click', () => {
-    cartDrawer.classList.remove('open')
+  document.getElementById('cartToggle').addEventListener('click', openCartDrawer)
+  document.getElementById('cartClose').addEventListener('click', closeCartDrawer)
+  document.getElementById('cartOverlay').addEventListener('click', closeCartDrawer)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeCartDrawer()
   })
 
-  const menuToggle = document.getElementById('menuToggle')
-  const dropdownMenu = document.getElementById('dropdownMenu')
-  if (menuToggle) {
-    menuToggle.addEventListener('click', (e) => {
-      e.stopPropagation()
-      dropdownMenu.classList.toggle('open')
-    })
-    dropdownMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        dropdownMenu.classList.remove('open')
-      })
-    })
-    document.addEventListener('click', (e) => {
-      if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        dropdownMenu.classList.remove('open')
-      }
-    })
-  }
+  initDropdownMenu()
 })

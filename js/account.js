@@ -1,156 +1,190 @@
 import { supabase } from './supabaseClient.js'
-import { getUser, onAuthChange, initAuthUI, openAuthModal, getInitials } from './auth.js'
+import { initDropdownMenu } from './nav.js'
+import { onAuthChange, initAuthUI, openAuthModal, getInitials } from './auth.js'
+import { trackVisit } from './track.js'
+import { escapeHtml, formatINR } from './utils.js'
+import { listAddresses, deleteAddress, setDefaultAddress, addressHtml, addressLines } from './addresses.js'
+import { renderAddressForm } from './address-form.js'
 
-const signedOutShell = document.getElementById('accountSignedOut')
-const dashboardShell = document.getElementById('accountDashboard')
-
+trackVisit()
 initAuthUI()
+initDropdownMenu()
 
-// Dropdown menu toggle
-const menuToggle = document.getElementById('menuToggle')
-const dropdownMenu = document.getElementById('dropdownMenu')
-if (menuToggle) {
-  menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation()
-    dropdownMenu.classList.toggle('open')
-  })
-  dropdownMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      dropdownMenu.classList.remove('open')
-    })
-  })
-  document.addEventListener('click', (e) => {
-    if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-      dropdownMenu.classList.remove('open')
-    }
-  })
+const $ = (id) => document.getElementById(id)
+const signedOutShell = $('accountSignedOut')
+const dashboardShell = $('accountDashboard')
+
+const DELIVERY_LABELS = {
+  processing: 'Preparing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
 }
 
-document.getElementById('accountSignInBtn').addEventListener('click', () => {
-  openAuthModal('Sign in to see your stats.')
-})
+let currentUser = null
+let addresses = []
 
+$('accountSignInBtn').addEventListener('click', () => openAuthModal('Sign in to see your orders.'))
+
+// Fires once on page load (with the saved session) and again on sign in / out
 onAuthChange((user) => {
+  if (user?.id === currentUser?.id) return
+  currentUser = user
   if (user) {
-    checkIfAdminAndShow(user)
+    showDashboard(user)
   } else {
     signedOutShell.style.display = 'block'
     dashboardShell.style.display = 'none'
   }
 })
 
-async function checkIfAdminAndShow(user) {
-  const { data: isAdmin } = await supabase.rpc('is_admin')
-
-  if (isAdmin) {
-    signedOutShell.style.display = 'block'
-    dashboardShell.style.display = 'none'
-    signedOutShell.innerHTML = `
-      <div class="section-head">
-        <div class="eyebrow">Admin Access</div>
-        <h2>You're signed in as admin</h2>
-        <p>Your account is registered as an admin. Go to your admin dashboard to manage the site.</p>
-      </div>
-      <a href="/admin" class="btn btn-dark">Go to Admin Dashboard</a>
-    `
-    return
-  }
-
-  showDashboard(user)
-}
-
 async function showDashboard(user) {
   signedOutShell.style.display = 'none'
   dashboardShell.style.display = 'block'
-  document.getElementById('accountName').textContent = user.user_metadata?.full_name || user.email
-  document.getElementById('accountAvatar').textContent = getInitials(user)
+  $('accountName').textContent = user.user_metadata?.full_name || user.email
+  $('accountAvatar').textContent = getInitials(user)
 
-  const { data: orders, error: ordersError } = await supabase
+  // Admins can shop too — show their orders, plus a shortcut to the dashboard
+  supabase.rpc('is_admin').then(({ data: isAdmin }) => {
+    if (isAdmin && !$('adminShortcut')) {
+      $('accountName').insertAdjacentHTML(
+        'afterend',
+        '<a id="adminShortcut" href="/admin" class="btn btn-dark" style="margin-top:10px; padding:8px 16px; font-size:0.82rem;">Go to admin dashboard →</a>'
+      )
+    }
+  })
+
+  await Promise.all([loadOrders(user), loadAddresses()])
+}
+
+// ===== ORDERS =====
+async function loadOrders(user) {
+  const { data: orders, error } = await supabase
     .from('orders')
-    .select('*')
+    .select('id, total_inr, status, created_at, shipping_address, fulfillment_status, order_items(quantity, products(title))')
     .eq('user_id', user.id)
+    .eq('status', 'paid')
     .order('created_at', { ascending: false })
 
-  if (ordersError) {
-    console.error(ordersError)
+  if (error) {
+    console.error(error)
     return
   }
 
-  const paidOrders = (orders || []).filter((o) => o.status === 'paid')
-  const orderIds = paidOrders.map((o) => o.id)
+  const totalItems = orders.reduce((sum, o) => sum + o.order_items.reduce((s, i) => s + i.quantity, 0), 0)
+  const totalSpent = orders.reduce((sum, o) => sum + (o.total_inr || 0), 0)
+  $('accountOrderCount').textContent = orders.length
+  $('accountTotalSpent').textContent = formatINR(totalSpent)
+  $('accountItemCount').textContent = totalItems
 
-  let itemsByOrder = {}
-  let totalItems = 0
-  if (orderIds.length > 0) {
-    const { data: items, error: itemsError } = await supabase
-      .from('order_items')
-      .select('*, products(title, price_inr)')
-      .in('order_id', orderIds)
+  const list = $('accountOrdersList')
+  $('noOrders').style.display = orders.length ? 'none' : 'block'
+  list.style.display = orders.length ? 'block' : 'none'
 
-    if (itemsError) {
-      console.error(itemsError)
-    } else {
-      totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
-      itemsByOrder = items.reduce((acc, i) => {
-        acc[i.order_id] = acc[i.order_id] || []
-        acc[i.order_id].push(i)
-        return acc
-      }, {})
-    }
-  }
-
-  const totalSpent = paidOrders.reduce((sum, o) => sum + (o.total_inr || 0), 0)
-
-  document.getElementById('accountOrderCount').textContent = paidOrders.length
-  document.getElementById('accountTotalSpent').textContent = `₹${totalSpent}`
-  document.getElementById('accountItemCount').textContent = totalItems
-
-  const list = document.getElementById('accountOrdersList')
-  const noOrders = document.getElementById('noOrders')
-
-  if (paidOrders.length === 0) {
-    list.style.display = 'none'
-    noOrders.style.display = 'block'
-    return
-  }
-
-  noOrders.style.display = 'none'
-  list.style.display = 'block'
-  list.innerHTML = paidOrders
+  list.innerHTML = orders
     .map((o) => {
-      const items = itemsByOrder[o.id] || []
-      const orderDate = new Date(o.created_at)
-      const dateStr = orderDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+      const date = new Date(o.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+      const delivery = o.fulfillment_status || 'processing'
+      const ship = o.shipping_address
       return `
       <div class="order-item">
         <div class="order-header">
           <div>
             <div class="order-id">Order #${o.id.slice(0, 8)}</div>
-            <div class="order-date">${dateStr}</div>
+            <div class="order-date">${date}</div>
           </div>
-          <span class="order-status paid">Paid</span>
+          <span class="order-status ${escapeHtml(delivery)}">${DELIVERY_LABELS[delivery] || escapeHtml(delivery)}</span>
         </div>
         <div class="order-items">
-          ${items.map((i) => `
-            <div class="order-item-detail">
-              <strong>${i.products?.title || 'Item'}</strong> × ${i.quantity}
-            </div>
-          `).join('')}
+          ${o.order_items
+            .map((i) => `<div class="order-item-detail"><strong>${escapeHtml(i.products?.title || 'Item')}</strong> × ${i.quantity}</div>`)
+            .join('')}
         </div>
+        ${
+          ship
+            ? `<div class="order-ship"><strong>Delivering to ${escapeHtml(ship.full_name)}</strong><br>${addressLines(ship).map(escapeHtml).join(', ')}</div>`
+            : ''
+        }
         <div class="order-footer">
           <span></span>
-          <div class="order-total">Total: <strong>₹${o.total_inr}</strong></div>
+          <div class="order-total">Total: <strong>${formatINR(o.total_inr)}</strong></div>
         </div>
       </div>`
     })
     .join('')
 }
 
-;(async () => {
-  const user = await getUser()
-  if (user) showDashboard(user)
-  else {
-    signedOutShell.style.display = 'block'
-    dashboardShell.style.display = 'none'
+// ===== SAVED ADDRESSES =====
+async function loadAddresses() {
+  const list = $('accountAddressList')
+  try {
+    addresses = await listAddresses()
+  } catch (err) {
+    console.error(err)
+    list.innerHTML = '<p class="muted">Couldn’t load your addresses right now.</p>'
+    return
   }
-})()
+
+  if (addresses.length === 0) {
+    list.innerHTML = '<p class="muted">No saved addresses yet — add one here or during checkout.</p>'
+    return
+  }
+
+  list.innerHTML = addresses
+    .map(
+      (a) => `
+    <div class="account-address${a.is_default ? ' is-default' : ''}">
+      <div>${addressHtml(a).replace('</strong>', `</strong>${a.is_default ? '<span class="address-tag">Default</span>' : ''}`)}</div>
+      <div class="account-address-actions">
+        <button type="button" data-action="edit" data-id="${a.id}">Edit</button>
+        ${a.is_default ? '' : `<button type="button" data-action="default" data-id="${a.id}">Make default</button>`}
+        <button type="button" class="danger" data-action="delete" data-id="${a.id}">Delete</button>
+      </div>
+    </div>`
+    )
+    .join('')
+}
+
+$('accountAddressList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-action]')
+  if (!btn) return
+  const { action, id } = btn.dataset
+  try {
+    if (action === 'edit') return openForm(addresses.find((a) => a.id === id))
+    if (action === 'default') await setDefaultAddress(id)
+    if (action === 'delete') {
+      if (!confirm('Delete this address? Past orders keep their own copy of it.')) return
+      await deleteAddress(id)
+    }
+    loadAddresses()
+  } catch (err) {
+    alert(`Something went wrong: ${err.message}`)
+  }
+})
+
+function openForm(address = null) {
+  const wrap = $('accountAddressFormWrap')
+  wrap.hidden = false
+  $('accountAddAddressBtn').hidden = true
+  renderAddressForm(wrap, {
+    address,
+    defaults: {
+      full_name: currentUser?.user_metadata?.full_name || '',
+      phone: (currentUser?.user_metadata?.phone || '').replace(/\D/g, '').slice(-10),
+    },
+    onSaved: () => {
+      closeForm()
+      loadAddresses()
+    },
+    onCancel: closeForm,
+  })
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function closeForm() {
+  $('accountAddressFormWrap').hidden = true
+  $('accountAddressFormWrap').innerHTML = ''
+  $('accountAddAddressBtn').hidden = false
+}
+
+$('accountAddAddressBtn').addEventListener('click', () => openForm())

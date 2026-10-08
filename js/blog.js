@@ -24,7 +24,7 @@ export async function loadStories() {
       <div class="eyebrow">This month's diary</div>
       <h3>${featured.title}${featured.artists ? ` — ${featured.artists.name}, ${featured.artists.age}` : ''}</h3>
       <p>${featured.excerpt || ''}</p>
-      <div style="margin-top:22px;"><a href="post.html?slug=${featured.slug}" class="btn btn-ghost">Read the full diary</a></div>
+      <div style="margin-top:22px;"><a href="/post?slug=${featured.slug}" class="btn btn-ghost">Read the full diary</a></div>
     </div>
 
     <div class="mini-list">
@@ -32,7 +32,7 @@ export async function loadStories() {
         .slice(0, 4)
         .map(
           (p) => `
-        <a class="mini-story" href="post.html?slug=${p.slug}">
+        <a class="mini-story" href="/post?slug=${p.slug}">
           <div class="mini-thumb" style="background:linear-gradient(135deg, ${p.gradient_from}, ${p.gradient_to});"></div>
           <div><h4>${p.title}</h4><span>${monthLabel(p.published_at)} · Art Diaries</span></div>
         </a>`

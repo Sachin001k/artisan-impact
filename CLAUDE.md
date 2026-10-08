@@ -105,8 +105,12 @@
 
 ## ⏳ TODO — Next Steps
 
-### 1. **Test Payment Flow End-to-End** 🔴 HIGH PRIORITY
-   - **Current Status:** Payment infrastructure ready but untested
+### 1. **Test Payment Flow End-to-End** 🟡 CARD FLOW VERIFIED
+   - **Current Status (Oct 8 2026):** ✅ First end-to-end Test Mode purchase
+     succeeded (₹1,800, Visa test card 4386…0153, OTP 123456) — order saved
+     to Supabase as `paid` with its order_items. Still to test: donation flow,
+     UPI (after enabling it in the dashboard), mobile, admin/account views.
+   - **(Oct 2026: gotcha #1 is obsolete — `npm run dev` now runs the API too, see Task 13.)**
    - **⚠️ KNOWN GOTCHA #1 — Wrong dev server gives "Could not start checkout":**
      Running `npm run dev` starts a plain **static file server** (`http-server`)
      on port 8000. That server has no backend at all — `/api/create-order`
@@ -146,7 +150,7 @@
      - Donation flow (no sign-in required)
      - Mobile checkout (responsive)
      - Payment failure handling
-   - **Guide:** See `RAZORPAY_SETUP.md` and `PAYMENT_TESTING.md` for detailed test instructions
+   - **Guide:** See `PAYMENTS.md`
 
 ### 1b. **Payment Methods (UPI / GPay / PhonePe / Cards / Netbanking)** ✅ ALREADY SUPPORTED
    - **Decision (Sep 2026):** Use Razorpay's **Standard Checkout** popup as-is,
@@ -176,6 +180,11 @@
      Dashboard → **Settings → Payment Methods** and toggle **UPI** on. Once
      enabled, UPI appears as its own tab with a dynamic QR (desktop) or
      one-tap GPay/PhonePe/Paytm buttons (mobile, if those apps are installed).
+   - **⚠️ Oct 2026: `4111 1111 1111 1111` fails with "International cards
+     are not supported"** — this account only accepts domestic cards. Use
+     Netbanking (any bank → Success) or Indian test cards Visa
+     `4386 2894 0766 0153` / Mastercard `2305 3242 5784 8228`. Untick "Save
+     this card" or Razorpay asks for a save-card OTP (click "Skip OTP").
    - **⚠️ Test card OTP never arrives:** this is expected — Test Mode only
      works with Razorpay's official fake card `4111 1111 1111 1111` (any
      future expiry, any 3-digit CVV, any digits for OTP if asked). A real
@@ -236,8 +245,7 @@
         replace with an inline error banner matching the site's style
      3. **Invoice/Receipt email** — generate and email order receipt
         (needs an email provider — see Task 6)
-   - **Files:** `checkout.html`, `js/checkout-page.js`, `js/checkout.js`
-   - **See:** `PAYMENT_UI_IDEAS.md` for the original idea list (partially done)
+   - **Files:** `checkout.html`, `js/checkout-page.js`, `js/checkout-button.js`
 
 ### 3. **Add Product Images (Replace Dummy Images)** 🟡 MEDIUM PRIORITY
    - **Current Status:** All 6 products have dummy picsum.photos images
@@ -285,9 +293,11 @@
      5. Update Vercel env vars (Production) with Live Key Secret
      6. Redeploy: `vercel --prod`
      7. Test with real payment
-   - **Guide:** See `RAZORPAY_CHECKLIST.md` for step-by-step
+   - **Guide:** See `PAYMENTS.md` → Going live
 
-### 4b. **Delivery Address System (Flipkart/Amazon-style)** 🔴 PROMOTED TO ACTIVE PLANNING (Sep 2026)
+### 4b. **Delivery Address System (Flipkart/Amazon-style)** ✅ BUILT (Oct 2026)
+   - **Built Oct 8 2026** — see Task 14. Requires `sql/delivery-and-performance.sql`.
+     The spec below is kept for reference.
    - **Status:** Previously deferred; owner has now asked for this to be
      planned in detail so it's ready to build. Not yet implemented — this
      is the spec to build from next.
@@ -479,16 +489,54 @@
        repo-wide grep that nothing referenced either file; the live admin
        is `admin.html` + `js/admin-dashboard.js`
    - 🟢 **Still open (low priority, cosmetic/DX, not urgent):**
-     1. Dropdown-menu-toggle logic (~15 lines) is copy-pasted identically
-        across `main.js`, `account.js`, `admin-products.js` — could extract
-        to a shared module
-     2. `js/checkout.js` (redirects to checkout.html) and
-        `js/checkout-page.js` (the actual checkout page logic) have
-        confusingly similar names for very different scopes — consider
-        renaming one for clarity (e.g. `checkout-redirect.js`)
+     1. ✅ Done Oct 2026 — dropdown logic moved to `js/nav.js`
+     2. ✅ Done Oct 2026 — `js/checkout.js` renamed to `js/checkout-button.js`
      3. No generic "content block" pattern exists yet for admin-editable
         homepage sections — this is exactly what Task 5b's `site_content`
         table is designed to introduce, so no separate action needed here
+
+### 13. **Dev Server, Admin Simplification & Image Uploads (Oct 2026)** ✅ DONE
+   - `npm run dev` now runs `scripts/dev-server.js`: static site + `api/*`
+     functions + `.env` loading + vercel.json clean URLs/rewrites. **This
+     replaces both old gotchas in Task 1** — `vercel dev` is no longer needed
+     locally. If port 8000 is busy it moves to the next free port.
+   - `api/create-order.js` and `api/verify-payment.js` now price the cart
+     from the `products` table (`api/_pricing.js`) — client prices are ignored.
+   - Admin page reduced to: Statistics (one card, month vs. all-time for
+     visitors / added to cart / bought), Orders, Site Images, Manage Products.
+   - Admin image uploads → Supabase Storage bucket `site-images`; homepage
+     slots defined in `js/site-images.js` (`IMAGE_SLOTS`).
+   - **Requires running `sql/stats-and-images.sql` once in Supabase.**
+   - Oct 2026: the old service-role key had stopped working (401); replaced
+     with a fresh one. Env is now a single `.env` (`.env.local` removed;
+     `.env.example` kept as the committed template). `sql/stats-and-images.sql`
+     has been run and verified.
+### 14. **Clean URLs, Cleanup, Scale Prep & Delivery Addresses (Oct 8 2026)** ✅
+   - **No `.html` in URLs anywhere:** every link uses `/`, `/checkout`, `/account`,
+     `/artist?id=`, `/post?slug=`, `/admin`, `/admin/products`. Asset paths are
+     absolute (`/css/…`). `.html` URLs 301-redirect (dev server) / 308 (Vercel
+     `cleanUrls`). **Keep using clean URLs + absolute asset paths in new code.**
+   - **Cleanup:** removed duplicate `Artisan photos/` folder; merged 4 payment
+     docs into `PAYMENTS.md`; deduped the 6 duplicated products in Supabase
+     (cart history merged onto the kept rows; `schema.sql` product seed now
+     only inserts into an empty table); carts auto-drop deleted products.
+   - **Scale/speed:** Supabase JS pinned to an exact jsDelivr build (year-long
+     cache), preconnect hints, Razorpay script `defer`, cache headers in
+     `vercel.json`, `.vercelignore` keeps scripts/sql/docs off the CDN, the two
+     1500px photos resized to 1000px, DB indexes + unique payment keys in
+     `sql/delivery-and-performance.sql`.
+   - **Delivery:** checkout is Cart → Delivery → Pay → Confirmed. Saved
+     addresses (radio cards) or a form with a Leaflet/OpenStreetMap map
+     ("Use my current location", draggable pin, reverse geocoding via
+     Nominatim, pincode → city/state via api.postalpincode.in). Server checks
+     sign-in (Bearer token) + address in `create-order` BEFORE payment and
+     stores them in Razorpay order notes; `verify-payment` snapshots the
+     address into `orders.shipping_address`. Admin Orders defaults to
+     "To ship", shows address/call/Maps links, updates `fulfillment_status`.
+     `/account` shows delivery status and manages saved addresses.
+   - **At real scale:** OpenStreetMap's free tile + Nominatim servers have
+     fair-use limits — swap to a keyed provider (MapTiler / Google / Mappls)
+     in `js/address-form.js` before heavy traffic.
 
 ---
 

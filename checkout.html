@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout — Artisan Impact</title>
-<link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+<link rel="icon" type="image/jpeg" href="/images/logo.jpeg">
+<link rel="preconnect" href="https://kvlqqsvyrspxbumoadxn.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/address.css">
 <style>
-  .checkout-wrap{ max-width:760px; margin:0 auto; padding-top:150px; padding-bottom:80px; }
+  .checkout-wrap{ max-width:1040px; margin:0 auto; padding-top:150px; padding-bottom:80px; }
   .checkout-steps{ display:flex; justify-content:center; gap:8px; margin-bottom:40px; flex-wrap:wrap; }
   .checkout-step-pill{
     padding:8px 16px; border-radius:999px; font-size:0.82rem; font-weight:600;
@@ -18,34 +22,81 @@
   .checkout-step-pill.active{ background:var(--ink); color:var(--paper); }
   .checkout-step-pill.done{ background:var(--teal); color:#fff; }
 
+  .checkout-layout{ display:grid; grid-template-columns:1.5fr 1fr; gap:24px; align-items:start; }
+  @media(max-width:820px){ .checkout-layout{ grid-template-columns:1fr; } }
   .order-summary-card{
-    background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:28px; margin-bottom:24px;
+    background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:24px;
   }
-  .order-summary-card h3{ margin:0 0 18px 0; }
-  .summary-line{
-    display:flex; justify-content:space-between; align-items:center; gap:12px;
-    padding:14px 0; border-bottom:1px solid var(--line);
-  }
-  .summary-line:last-of-type{ border-bottom:none; }
+  .order-summary-card h3{ margin:0 0 14px 0; font-size:1.15rem; }
+  .card-title-row{ display:flex; justify-content:space-between; align-items:baseline; }
+  .text-link{ color:var(--cobalt); font-weight:600; font-size:0.88rem; }
+  .text-link:hover{ text-decoration:underline; }
+  .summary-line{ display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .summary-line:last-child{ border-bottom:none; padding-bottom:0; }
+  .summary-thumb{ width:64px; height:64px; border-radius:10px; overflow:hidden; flex-shrink:0; }
+  .summary-thumb img{ width:100%; height:100%; object-fit:cover; }
+  .summary-line-info{ flex:1; min-width:0; }
   .summary-line-title{ font-weight:600; }
-  .summary-line-sub{ font-size:0.8rem; color:rgba(27,38,32,0.55); }
-  .summary-line-price{ font-family:'IBM Plex Mono', monospace; white-space:nowrap; }
+  .summary-line-sub{ font-size:0.82rem; color:rgba(27,38,32,0.7); }
+  .summary-line-price{ font-family:'IBM Plex Mono', monospace; white-space:nowrap; font-weight:500; }
+
+  .pay-card{ position:sticky; top:100px; }
+  .pay-line{ display:flex; justify-content:space-between; padding:6px 0; font-size:0.92rem; color:rgba(27,38,32,0.8); }
+  .pay-free{ color:var(--teal); font-weight:600; }
   .summary-total-row{
     display:flex; justify-content:space-between; align-items:center;
-    padding-top:18px; margin-top:6px; border-top:2px solid var(--ink);
-    font-size:1.15rem; font-weight:700;
+    padding-top:14px; margin:8px 0 18px; border-top:1.5px solid var(--ink);
+    font-size:1.2rem; font-weight:700;
   }
+  .pay-now-btn{ font-size:1rem; padding:15px; }
+  .pay-secure{ text-align:center; font-size:0.78rem; color:rgba(27,38,32,0.65); margin-top:12px; }
 
-  .checkout-empty{ text-align:center; padding:60px 20px; }
-  .checkout-empty a{ color:var(--cobalt); font-weight:600; text-decoration:none; }
+  .checkout-empty{ text-align:center; padding:60px 20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .checkout-empty-icon{ font-size:2.6rem; }
+
+  .checkout-left{ display:flex; flex-direction:column; gap:20px; min-width:0; }
+  .muted{ color:rgba(27,38,32,0.65); font-size:0.9rem; }
+  .text-link{ background:none; border:none; cursor:pointer; font-family:inherit; padding:0; }
+  .pay-hint{ text-align:center; font-size:0.82rem; color:rgba(27,38,32,0.7); margin-top:10px; }
+  .pay-hint:empty{ display:none; }
+
+  .delivery-signin{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .delivery-signin > div:nth-child(2){ flex:1; min-width:180px; }
+  .delivery-signin p{ font-size:0.88rem; color:rgba(27,38,32,0.7); margin-top:2px; }
+  .delivery-signin-icon{ font-size:2rem; }
+
+  .address-list{ display:flex; flex-direction:column; gap:10px; }
+  .address-option{
+    display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1.5px solid var(--line);
+    border-radius:12px; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .address-option:hover{ border-color:rgba(27,38,32,0.35); }
+  .address-option.selected{ border-color:var(--poppy); background:rgba(230,58,46,0.04); }
+  .address-option input{ width:auto; margin-top:4px; accent-color:var(--poppy); }
+  .address-option .address-block{ flex:1; font-size:0.9rem; line-height:1.5; }
+  .address-tag{ display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.06em; background:rgba(18,184,160,0.15); color:#0b7a69; padding:2px 8px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+  .address-edit{ background:none; border:none; color:var(--cobalt); font-weight:600; cursor:pointer; font-size:0.85rem; font-family:inherit; }
+  .add-address-btn{
+    width:100%; margin-top:12px; padding:14px; border:1.5px dashed rgba(27,38,32,0.3); border-radius:12px;
+    background:none; font-weight:600; font-family:inherit; font-size:0.92rem; color:var(--ink); cursor:pointer;
+  }
+  .add-address-btn:hover{ border-color:var(--poppy); color:var(--poppy); }
+  #addressFormWrap{ margin-top:16px; }
+  .address-block{ font-size:0.92rem; line-height:1.55; }
 
   .checkout-signin-note{
-    background:#fff7ea; border:1.5px solid rgba(255,176,32,0.4); border-radius:12px;
-    padding:18px 20px; margin-bottom:24px; font-size:0.9rem;
+    background:#fff7ea; border:1.5px solid rgba(255,176,32,0.45); border-radius:12px;
+    padding:12px 14px; margin-bottom:14px; font-size:0.88rem;
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
   }
+  .btn-outline-dark{ border-color:var(--ink); color:var(--ink); background:#fff; padding:8px 16px; font-size:0.85rem; }
+  .btn-outline-dark:hover{ background:var(--ink); color:var(--paper); }
 
-  .pay-btn-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-  .pay-amount{ font-size:1.3rem; font-weight:700; }
+  @media(max-width:640px){
+    .checkout-wrap{ padding-top:110px; }
+    .order-summary-card{ padding:18px; }
+    .summary-thumb{ width:52px; height:52px; }
+  }
 
   .checkout-success{ text-align:center; padding:40px 20px; }
   .success-badge{
@@ -56,6 +107,8 @@
   }
   @keyframes popIn{ from{ transform:scale(0); opacity:0; } to{ transform:scale(1); opacity:1; } }
   .success-order-id{ font-family:'IBM Plex Mono', monospace; color:rgba(27,38,32,0.6); }
+  .success-ship{ max-width:380px; margin:24px auto 0; text-align:left; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .success-ship-label{ font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:rgba(27,38,32,0.7); margin-bottom:6px; }
   .success-actions{ display:flex; gap:12px; justify-content:center; margin-top:30px; flex-wrap:wrap; }
 
   .processing-overlay{
@@ -75,15 +128,15 @@
 
 <header>
   <div class="nav-inner">
-    <a href="index.html" class="logo">
-      <img src="images/logo.jpeg" alt="Artisan Impact" style="height:32px; width:auto; margin-right:8px;">
+    <a href="/" class="logo">
+      <img src="/images/logo.jpeg" alt="Artisan Impact" style="height:32px; width:auto; margin-right:8px;">
       Artisan Impact
     </a>
     <nav class="pills">
-      <a href="index.html#shop">Shop</a>
-      <a href="index.html#stories">Art Diaries</a>
-      <a href="index.html#donate">Donate</a>
-      <a href="index.html#about">About</a>
+      <a href="/#shop">Shop</a>
+      <a href="/#stories">Art Diaries</a>
+      <a href="/#donate">Donate</a>
+      <a href="/#about">About</a>
     </nav>
     <div class="account-area" id="accountArea">
       <button class="account-toggle" id="accountToggle">Sign in</button>
@@ -126,7 +179,7 @@
         </div>
         <div>
           <label for="authPhone">Phone number</label>
-          <input id="authPhone" type="tel" required placeholder="10-digit number">
+          <input id="authPhone" type="tel" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" title="10-digit Indian mobile number" autocomplete="tel-national" required placeholder="10-digit mobile number">
         </div>
         <div>
           <label for="authEmailSignup">Email address</label>
@@ -158,51 +211,83 @@
 <div class="checkout-wrap wrap">
 
   <div class="checkout-steps">
-    <span class="checkout-step-pill done">1. Cart</span>
-    <span class="checkout-step-pill active" id="stepReview">2. Review &amp; pay</span>
-    <span class="checkout-step-pill" id="stepDone">3. Confirmed</span>
+    <span class="checkout-step-pill done">✓ Cart</span>
+    <span class="checkout-step-pill active" id="stepDelivery">2. Delivery</span>
+    <span class="checkout-step-pill" id="stepPay">3. Pay</span>
+    <span class="checkout-step-pill" id="stepDone">4. Confirmed</span>
   </div>
 
   <!-- EMPTY CART STATE -->
   <div id="checkoutEmpty" class="checkout-empty" style="display:none;">
+    <div class="checkout-empty-icon" aria-hidden="true">🎨</div>
     <h2>Your cart is empty</h2>
     <p>Add a few pieces first, then come back here to check out.</p>
-    <a href="index.html#shop">← Back to the shop</a>
+    <a href="/#shop" class="btn btn-dark">Browse the collection</a>
   </div>
 
-  <!-- REVIEW & PAY STATE -->
+  <!-- DELIVERY + PAY -->
   <div id="checkoutReview" style="display:none;">
     <div class="section-head" style="margin-bottom:24px;">
       <div class="eyebrow">Checkout</div>
-      <h2>Review your order</h2>
+      <h2 id="checkoutHeading">Where should we deliver?</h2>
     </div>
 
-    <div class="order-summary-card">
-      <h3>Items</h3>
-      <div id="checkoutItems"></div>
-      <div class="summary-total-row">
-        <span>Total</span>
-        <span id="checkoutTotal">₹0</span>
+    <div class="checkout-layout">
+      <div class="checkout-left">
+        <!-- STEP 2: choose / add an address -->
+        <section class="order-summary-card" id="deliveryStep">
+          <div id="deliverySignin" class="delivery-signin" hidden>
+            <div class="delivery-signin-icon" aria-hidden="true">📦</div>
+            <div>
+              <strong>Sign in to add your delivery address</strong>
+              <p>We'll save it so next time checkout takes one click.</p>
+            </div>
+            <button type="button" class="btn btn-dark" id="deliverySigninBtn">Sign in</button>
+          </div>
+
+          <div id="deliveryChooser" hidden>
+            <div class="card-title-row">
+              <h3>Delivery address</h3>
+            </div>
+            <div id="addressList" class="address-list" role="radiogroup" aria-label="Saved addresses"></div>
+            <button type="button" class="add-address-btn" id="addAddressBtn">+ Add a new address</button>
+            <div id="addressFormWrap" hidden></div>
+          </div>
+          <p id="deliveryLoading" class="muted">Loading your addresses…</p>
+        </section>
+
+        <!-- STEP 3: chosen address -->
+        <section class="order-summary-card delivering-to" id="deliverySummary" hidden>
+          <div class="card-title-row">
+            <h3>Delivering to</h3>
+            <button type="button" class="text-link" id="changeAddressBtn">Change</button>
+          </div>
+          <div id="deliverySummaryAddress" class="address-block"></div>
+        </section>
+
+        <section class="order-summary-card">
+          <div class="card-title-row">
+            <h3>Items</h3>
+            <a href="/#shop" class="text-link">+ Add more</a>
+          </div>
+          <div id="checkoutItems"></div>
+        </section>
       </div>
-    </div>
 
-    <div id="checkoutSigninNote" class="checkout-signin-note" style="display:none;">
-      You'll need to sign in before paying — click "Pay now" and we'll prompt you.
-    </div>
-
-    <div class="order-summary-card">
-      <div class="pay-btn-row">
-        <div>
-          <div style="font-size:0.8rem; color:rgba(27,38,32,0.55);">Amount to pay</div>
-          <div class="pay-amount" id="checkoutPayAmount">₹0</div>
+      <aside class="order-summary-card pay-card">
+        <h3>Order summary</h3>
+        <div class="pay-line"><span>Subtotal</span><span id="checkoutSubtotal">₹0</span></div>
+        <div class="pay-line"><span>Delivery</span><span class="pay-free">Free</span></div>
+        <div class="summary-total-row">
+          <span>Total</span>
+          <span id="checkoutTotal">₹0</span>
         </div>
-        <button class="btn btn-dark" id="payNowBtn">Pay now</button>
-      </div>
-    </div>
 
-    <p style="text-align:center; font-size:0.8rem; color:rgba(27,38,32,0.5);">
-      Payments are processed securely via Razorpay. <a href="index.html#shop" style="color:var(--cobalt);">← Continue shopping</a>
-    </p>
+        <button class="btn btn-primary btn-full pay-now-btn" id="payNowBtn">Continue</button>
+        <p class="pay-hint" id="payHint"></p>
+        <p class="pay-secure"><span aria-hidden="true">🔒</span> Secure payment via Razorpay · UPI, Cards, Netbanking</p>
+      </aside>
+    </div>
   </div>
 
   <!-- SUCCESS STATE -->
@@ -211,9 +296,13 @@
     <h2>Order confirmed!</h2>
     <p>Thank you for supporting a young artist.</p>
     <p class="success-order-id" id="successOrderId"></p>
+    <div class="success-ship">
+      <div class="success-ship-label">Shipping to</div>
+      <div id="successAddress" class="address-block"></div>
+    </div>
     <div class="success-actions">
-      <a href="index.html#shop" class="btn btn-primary">Continue shopping</a>
-      <a href="account.html" class="btn btn-dark">View my orders</a>
+      <a href="/#shop" class="btn btn-primary">Continue shopping</a>
+      <a href="/account" class="btn btn-dark">View my orders</a>
     </div>
   </div>
 
@@ -231,7 +320,7 @@
   </div>
 </footer>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script type="module" src="js/checkout-page.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<script type="module" src="/js/checkout-page.js"></script>
 </body>
 </html>

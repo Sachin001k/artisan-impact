@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js'
-import { addToCart } from './cart.js'
+import { addToCart, openCartDrawer, syncCartWithProducts } from './cart.js'
+import { escapeHtml, formatINR, fallbackGradient, showToast } from './utils.js'
 
 let allProducts = []
 
@@ -11,42 +12,51 @@ export async function loadProducts() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    grid.innerHTML = `<p>Couldn't load products right now. Check your Supabase URL/key in js/supabaseClient.js.</p>`
+    grid.innerHTML = `<p class="shop-message">Couldn't load the collection right now — please refresh in a moment.</p>`
     console.error(error)
     return
   }
 
   allProducts = data
+  syncCartWithProducts(allProducts)
   renderProducts(allProducts)
 }
 
 function renderProducts(products) {
   const grid = document.getElementById('shopGrid')
   if (products.length === 0) {
-    grid.innerHTML = `<p>No pieces here yet — check back soon.</p>`
+    grid.innerHTML = `<p class="shop-message">No pieces here yet — check back soon.</p>`
     return
   }
 
-  const palette = ['var(--poppy)', 'var(--cobalt)', 'var(--teal)', 'var(--marigold)', 'var(--violet)']
-
   grid.innerHTML = products
     .map((p, i) => {
-      const bg = p.image_url
-        ? `url(${p.image_url}) center/cover`
-        : `linear-gradient(135deg, ${palette[i % palette.length]}, #e0694f)`
+      const title = escapeHtml(p.title)
+      const artist = escapeHtml(p.artist)
       const artistLabel = p.artist_id
-        ? `<a href="artist.html?id=${p.artist_id}" class="p-artist">by ${p.artist}</a>`
-        : `<span class="p-artist">by ${p.artist}</span>`
+        ? `<a href="/artist?id=${p.artist_id}" class="p-artist">by ${artist}</a>`
+        : `<span class="p-artist">by ${artist}</span>`
+      const thumb = p.image_url
+        ? `<img src="${escapeHtml(p.image_url)}" alt="${title}" loading="lazy">`
+        : ''
       return `
-      <div class="polaroid" data-cat="${p.category}" data-price="${p.price_inr}">
-        <div class="art-thumb" style="background:${bg};"></div>
-        <h3>${p.title}</h3>
-        <div class="p-meta">${artistLabel}<span class="p-price">₹${p.price_inr}</span></div>
+      <article class="polaroid" data-cat="${escapeHtml(p.category)}">
+        <div class="art-thumb" style="background:${fallbackGradient(i)};">
+          ${thumb}
+          <span class="p-badge">${escapeHtml(p.category)}</span>
+        </div>
+        <h3>${title}</h3>
+        <div class="p-meta">${artistLabel}<span class="p-price">${formatINR(p.price_inr)}</span></div>
         <button class="add-btn" data-id="${p.id}">Add to cart</button>
-      </div>
+      </article>
     `
     })
     .join('')
+
+  // A broken image link falls back to the colour block instead of a broken icon
+  grid.querySelectorAll('.art-thumb img').forEach((img) => {
+    img.addEventListener('error', () => img.remove(), { once: true })
+  })
 
   grid.querySelectorAll('.add-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -54,6 +64,7 @@ function renderProducts(products) {
       addToCart(product)
       btn.textContent = 'Added ✓'
       btn.classList.add('added')
+      showToast(`Added “${product.title}” to your cart`, { label: 'View cart', onClick: openCartDrawer })
       setTimeout(() => {
         btn.textContent = 'Add to cart'
         btn.classList.remove('added')

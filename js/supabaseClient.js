@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// Pinned exact version: cached by the browser/CDN for a year, no version lookup per visit
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/+esm'
 
 // These are safe to expose in client-side code — the anon key only ever
 // grants what your Row Level Security policies allow (see sql/schema.sql).

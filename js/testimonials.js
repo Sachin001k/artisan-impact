@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js'
+import { escapeHtml } from './utils.js'
 
 export async function loadTestimonials() {
   const grid = document.getElementById('testimonialGrid')
@@ -7,6 +8,7 @@ export async function loadTestimonials() {
   const { data, error } = await supabase
     .from('testimonials')
     .select('*')
+    .eq('approved', true)
     .order('created_at', { ascending: false })
     .limit(6)
 
@@ -26,8 +28,8 @@ export async function loadTestimonials() {
       (t) => `
     <div class="testimonial-card">
       <div class="stars">${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}</div>
-      <p>"${t.quote}"</p>
-      <span class="testimonial-name">${t.customer_name}</span>
+      <p>"${escapeHtml(t.quote)}"</p>
+      <span class="testimonial-name">${escapeHtml(t.customer_name)}</span>
     </div>`
     )
     .join('')

@@ -4,15 +4,19 @@
   "private": true,
   "type": "module",
   "description": "Artisan Impact - shop, blog, and donations for a children's art program",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "dev": "http-server . -p 8000 -c-1 -o",
-    "start": "http-server . -p 8000"
+    "dev": "node scripts/dev-server.js --open",
+    "start": "node scripts/dev-server.js",
+    "check": "node --check scripts/dev-server.js && node --check api/create-order.js && node --check api/verify-payment.js"
   },
   "dependencies": {
-    "razorpay": "^2.9.4",
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "razorpay": "^2.9.4"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "dotenv": "^17.4.2"
   }
 }

@@ -66,13 +66,17 @@ create policy "public insert volunteers" on volunteers for insert with check (tr
 -- them. The service role key bypasses RLS entirely.
 
 -- Sample products so the shop isn't empty on first load
-insert into products (title, artist, price_inr, category, image_url) values
-  ('Monsoon in Marigold', 'Aanya, age 11', 1200, 'painting', null),
+-- (only when the table is empty — re-running this file used to duplicate them)
+insert into products (title, artist, price_inr, category, image_url)
+select * from (values
+  ('Monsoon in Marigold', 'Aanya, age 11', 1200, 'painting', null::text),
   ('Terracotta Bird Set', 'Rehan, age 9', 650, 'craft', null),
   ('City of Kites', 'Meher, age 13', 450, 'print', null),
   ('Grandmother''s Garden', 'Simran, age 12', 1800, 'painting', null),
   ('Woven Wall Hanging', 'Dev, age 14', 900, 'craft', null),
-  ('Our Street at Dusk', 'Ira, age 10', 380, 'print', null);
+  ('Our Street at Dusk', 'Ira, age 10', 380, 'print', null)
+) as seed(title, artist, price_inr, category, image_url)
+where not exists (select 1 from products);
 
 -- ============================================================
 -- ARTISTS — one row per young artist, so products and blog

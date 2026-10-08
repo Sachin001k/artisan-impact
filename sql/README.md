@@ -21,7 +21,21 @@ Sets up all database tables with sample data:
 3. Copy-paste the entire contents of `schema.sql`
 4. Click "Run"
 
-### 2. `update-product-images.sql` — Add Product Images
+### 2. `stats-and-images.sql` — Admin Statistics + Image Uploads (Run Once)
+Run after `schema.sql`. Safe to re-run. Adds:
+- `page_views` table + `cart_events.visitor_id` — counts visitors and people who added to cart
+- `admin_stats()` function — powers the admin Statistics card
+- Admin insert/update/delete policies on `products` (without these, edits from the product manager were silently blocked)
+- `site_images` table + public `site-images` Storage bucket (admin-only uploads)
+
+### 3. `delivery-and-performance.sql` — Delivery Addresses + Speed (Run Once)
+Run after `stats-and-images.sql`. Safe to re-run. Adds:
+- `addresses` table (customers see only their own) with one default per customer
+- `orders.shipping_address` (frozen copy of the address) and `orders.fulfillment_status` (processing → shipped → delivered)
+- Admin permission to update order delivery status
+- Indexes for common lookups, and unique keys so a retried payment can never create a duplicate order/donation
+
+### 4. `update-product-images.sql` — Add Product Images
 Updates product `image_url` fields to point to images in the `/images` folder.
 
 Currently maps:
@@ -55,7 +69,7 @@ All images are located in `/images/` folder in your project root:
 
 ### Reserved Images (used elsewhere, don't include in products):
 - `logo.jpeg` — Used in navigation and headers
-- `About us Mihir photo.png` — Used on About page
+- `about-us-mihir-photo.png` — Used on About page
 
 ---
 
@@ -126,9 +140,9 @@ INSERT INTO products (title, artist, price_inr, category, image_url) VALUES
 ```sql
 DELETE FROM testimonials;
 
-INSERT INTO testimonials (author, title, content, rating, approved) VALUES
-  ('Priya M.', 'Beautiful art, faster shipping than expected', 'My daughter loved the print! Framed it immediately. Artisan Impact is doing wonderful work.', 5, true),
-  ('Rajesh K.', 'Every purchase supports young artists', 'Worth every rupee. The craft items are intricate and thoughtfully made.', 5, true);
+INSERT INTO testimonials (customer_name, quote, rating, approved) VALUES
+  ('Priya M.', 'My daughter loved the print! Framed it immediately. Artisan Impact is doing wonderful work.', 5, true),
+  ('Rajesh K.', 'Worth every rupee. The craft items are intricate and thoughtfully made.', 5, true);
 ```
 
 ⚠️ **Warning:** These operations delete data permanently. Use only if absolutely necessary.

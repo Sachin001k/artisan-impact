@@ -4,48 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard — Artisan Impact</title>
-<link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+<link rel="icon" type="image/jpeg" href="/images/logo.jpeg">
+<link rel="preconnect" href="https://kvlqqsvyrspxbumoadxn.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/admin-dashboard.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin-dashboard.css">
 </head>
 <body>
 
 <div class="dashboard-container">
   <!-- ADMIN LOGIN SCREEN -->
-  <div id="adminLoginScreen" style="display:none; position:fixed; inset:0; background:var(--paper); z-index:1000; display:flex; align-items:center; justify-content:center;">
+  <div id="adminLoginScreen" style="display:none; position:fixed; inset:0; background:var(--paper); z-index:1000; align-items:center; justify-content:center;">
     <div style="max-width:420px; width:90%;">
       <div style="text-align:center; margin-bottom:32px;">
-        <img src="images/logo.jpeg" alt="Artisan Impact" style="height:48px; margin-bottom:16px;">
+        <img src="/images/logo.jpeg" alt="Artisan Impact" style="height:48px; margin:0 auto 16px;">
         <h2 style="margin:0 0 8px 0; color:var(--ink);">Admin Dashboard</h2>
-        <p style="margin:0; color:rgba(27,38,32,0.6);">Sign in to access the admin panel</p>
+        <p style="margin:0; color:rgba(27,38,32,0.7);">Sign in to access the admin panel</p>
       </div>
 
       <form id="adminLoginForm" style="background:#fff; border:1.5px solid rgba(255,176,32,0.25); border-radius:16px; padding:32px;">
-        <div style="margin-bottom:16px;">
-          <label for="adminLoginEmail" style="display:block; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; font-weight:600; color:var(--poppy);">Email</label>
-          <input id="adminLoginEmail" type="email" required placeholder="admin@gmail.com" style="width:100%; padding:11px 14px; border:2px solid rgba(255,176,32,0.3); border-radius:8px; font-size:0.95rem;">
+        <div>
+          <label for="adminLoginEmail" class="admin-login-label">Email</label>
+          <input id="adminLoginEmail" type="email" required placeholder="admin@gmail.com">
         </div>
-
-        <div style="margin-bottom:24px;">
-          <label for="adminLoginPassword" style="display:block; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; font-weight:600; color:var(--poppy);">Password</label>
-          <input id="adminLoginPassword" type="password" required minlength="6" placeholder="At least 6 characters" style="width:100%; padding:11px 14px; border:2px solid rgba(255,176,32,0.3); border-radius:8px; font-size:0.95rem;">
+        <div>
+          <label for="adminLoginPassword" class="admin-login-label">Password</label>
+          <input id="adminLoginPassword" type="password" required minlength="6" placeholder="At least 6 characters">
         </div>
-
-        <button type="submit" class="btn btn-primary btn-full" style="margin-bottom:12px;">Sign in</button>
+        <button type="submit" class="btn btn-primary btn-full">Sign in</button>
         <p id="adminLoginError" style="color:var(--poppy); font-size:0.85rem; margin:0; text-align:center; display:none;"></p>
-        <p style="font-size:0.85rem; color:rgba(27,38,32,0.6); margin:12px 0 0 0; text-align:center;">First time? Use this form to create your account. Access only if your email is in the admin list.</p>
+        <p style="font-size:0.85rem; color:rgba(27,38,32,0.7); margin:0; text-align:center;">Only emails in the admin list can access this page.</p>
       </form>
     </div>
   </div>
 
   <!-- SIDEBAR -->
-  <aside class="dashboard-sidebar" id="dashboardSidebar">
+  <aside class="dashboard-sidebar" id="dashboardSidebar" style="display:none;">
     <div class="sidebar-header">
       <a href="/" class="sidebar-logo">
-        <img src="images/logo.jpeg" alt="Artisan Impact">
+        <img src="/images/logo.jpeg" alt="Artisan Impact">
         <span>Artisan Impact</span>
       </a>
       <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">✕</button>
@@ -53,74 +53,21 @@
 
     <nav class="sidebar-nav">
       <div class="nav-section">
-        <div class="nav-label">Dashboard</div>
-        <a href="#" class="nav-item active" data-section="overview">
+        <a href="#" class="nav-item active" data-section="statistics">
           <span class="nav-icon">📊</span>
-          <span class="nav-text">Overview</span>
+          <span class="nav-text">Statistics</span>
         </a>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-label">Operations</div>
         <a href="#" class="nav-item" data-section="orders">
           <span class="nav-icon">📦</span>
           <span class="nav-text">Orders</span>
         </a>
-        <a href="#" class="nav-item" data-section="products">
+        <a href="#" class="nav-item" data-section="images">
+          <span class="nav-icon">🖼️</span>
+          <span class="nav-text">Site Images</span>
+        </a>
+        <a href="/admin/products" class="nav-item">
           <span class="nav-icon">🎨</span>
-          <span class="nav-text">Products</span>
-        </a>
-        <a href="#" class="nav-item" data-section="customers">
-          <span class="nav-icon">👥</span>
-          <span class="nav-text">Customers</span>
-        </a>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-label">Community</div>
-        <a href="#" class="nav-item" data-section="artisans">
-          <span class="nav-icon">🎭</span>
-          <span class="nav-text">Artisans</span>
-        </a>
-        <a href="#" class="nav-item" data-section="donations">
-          <span class="nav-icon">❤️</span>
-          <span class="nav-text">Donations</span>
-        </a>
-        <a href="#" class="nav-item" data-section="volunteers">
-          <span class="nav-icon">🤝</span>
-          <span class="nav-text">Volunteers</span>
-        </a>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-label">Management</div>
-        <a href="#" class="nav-item" data-section="reviews">
-          <span class="nav-icon">⭐</span>
-          <span class="nav-text">Reviews</span>
-        </a>
-        <a href="#" class="nav-item" data-section="content">
-          <span class="nav-icon">📝</span>
-          <span class="nav-text">Content</span>
-        </a>
-        <a href="#" class="nav-item" data-section="analytics">
-          <span class="nav-icon">📈</span>
-          <span class="nav-text">Analytics</span>
-        </a>
-        <a href="#" class="nav-item" data-section="notifications">
-          <span class="nav-icon">🔔</span>
-          <span class="nav-text">Notifications</span>
-        </a>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-label">Admin</div>
-        <a href="#" class="nav-item" data-section="settings">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text">Settings</span>
-        </a>
-        <a href="#" class="nav-item" data-section="audit">
-          <span class="nav-icon">📋</span>
-          <span class="nav-text">Audit Log</span>
+          <span class="nav-text">Manage Products</span>
         </a>
       </div>
     </nav>
@@ -137,336 +84,130 @@
   <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
 
   <!-- MAIN CONTENT -->
-  <main class="dashboard-main">
-    <!-- TOP BAR -->
+  <main class="dashboard-main" style="display:none;">
     <header class="dashboard-header">
       <div class="header-left">
-        <h1 id="pageTitle">Overview</h1>
+        <h1 id="pageTitle">Statistics</h1>
       </div>
       <div class="header-right">
-        <input type="text" class="header-search" id="globalSearch" placeholder="Search orders, products, customers...">
-        <div class="header-user">
-          <span id="adminEmail" class="admin-email"></span>
-          <button class="admin-avatar" id="adminMenu">👤</button>
-        </div>
+        <span id="adminEmail" class="admin-email"></span>
       </div>
     </header>
 
-    <!-- CONTENT AREA -->
     <div class="dashboard-content">
-      <!-- OVERVIEW SECTION -->
-      <section id="overviewSection" class="page-section active">
-        <div class="page-header">
-          <div>
-            <h2>Dashboard Overview</h2>
-            <p>Monitor your business metrics and recent activity</p>
-          </div>
-          <div class="header-actions">
-            <input type="date" id="dateFrom" class="date-input">
-            <span class="text-muted">to</span>
-            <input type="date" id="dateTo" class="date-input">
-            <button class="btn btn-dark" id="filterBtn">Filter</button>
-          </div>
-        </div>
-
-        <!-- KPI CARDS -->
-        <div class="kpi-grid">
-          <div class="kpi-card" data-navigate="orders">
-            <div class="kpi-header">
-              <span class="kpi-icon">📦</span>
-              <span class="kpi-label">Paid Orders</span>
+      <!-- STATISTICS -->
+      <section id="statisticsSection" class="page-section active">
+        <div class="stats-card">
+          <div class="stats-card-head">
+            <div>
+              <h2>Website statistics</h2>
+              <p id="statsMonthLabel">This month vs. all time</p>
             </div>
-            <div class="kpi-value" id="kpiOrders">—</div>
-            <div class="kpi-meta" id="kpiOrdersMeta">Loading...</div>
+            <button class="btn btn-dark" id="refreshStatsBtn">Refresh</button>
           </div>
 
-          <div class="kpi-card" data-navigate="orders">
-            <div class="kpi-header">
-              <span class="kpi-icon">💰</span>
-              <span class="kpi-label">Revenue</span>
+          <p class="stats-error" id="statsError" hidden></p>
+
+          <div class="stats-row">
+            <div class="stats-row-title"><span class="stats-icon" style="background:rgba(47,95,255,0.12);">👀</span> Visited the website</div>
+            <div class="stat-box"><div class="stat-box-label">This month</div><div class="stat-box-value" id="statVisitorsMonth">—</div></div>
+            <div class="stat-box"><div class="stat-box-label">All time</div><div class="stat-box-value" id="statVisitorsAll">—</div></div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stats-row-title"><span class="stats-icon" style="background:rgba(255,176,32,0.18);">🛒</span> Added to cart</div>
+            <div class="stat-box"><div class="stat-box-label">This month</div><div class="stat-box-value" id="statCartMonth">—</div></div>
+            <div class="stat-box"><div class="stat-box-label">All time</div><div class="stat-box-value" id="statCartAll">—</div></div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stats-row-title"><span class="stats-icon" style="background:rgba(18,184,160,0.15);">🎨</span> Bought paintings</div>
+            <div class="stat-box">
+              <div class="stat-box-label">This month</div>
+              <div class="stat-box-value" id="statBuyersMonth">—</div>
+              <div class="stat-box-sub" id="statSoldMonth"></div>
             </div>
-            <div class="kpi-value" id="kpiRevenue">—</div>
-            <div class="kpi-meta" id="kpiRevenueMeta">Loading...</div>
-          </div>
-
-          <div class="kpi-card" data-navigate="donations">
-            <div class="kpi-header">
-              <span class="kpi-icon">❤️</span>
-              <span class="kpi-label">Donations</span>
+            <div class="stat-box">
+              <div class="stat-box-label">All time</div>
+              <div class="stat-box-value" id="statBuyersAll">—</div>
+              <div class="stat-box-sub" id="statSoldAll"></div>
             </div>
-            <div class="kpi-value" id="kpiDonations">—</div>
-            <div class="kpi-meta" id="kpiDonationsMeta">Loading...</div>
           </div>
 
-          <div class="kpi-card" data-navigate="volunteers">
-            <div class="kpi-header">
-              <span class="kpi-icon">🤝</span>
-              <span class="kpi-label">Volunteer Signups</span>
-            </div>
-            <div class="kpi-value" id="kpiVolunteers">—</div>
-            <div class="kpi-meta" id="kpiVolunteersMeta">Loading...</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-icon">🛒</span>
-              <span class="kpi-label">Cart Adds</span>
-            </div>
-            <div class="kpi-value" id="kpiCartAdds">—</div>
-            <div class="kpi-meta" id="kpiCartAddsMeta">Loading...</div>
-          </div>
-
-          <div class="kpi-card" data-navigate="reviews">
-            <div class="kpi-header">
-              <span class="kpi-icon">⭐</span>
-              <span class="kpi-label">Reviews to Approve</span>
-            </div>
-            <div class="kpi-value" id="kpiReviews">—</div>
-            <div class="kpi-meta" id="kpiReviewsMeta">Loading...</div>
-          </div>
-        </div>
-
-        <!-- CHARTS - Commented out for now, uncomment when needed
-        <div class="charts-grid">
-          <div class="chart-card">
-            <div class="chart-header">
-              <h3>Revenue Trend</h3>
-              <span class="chart-period">Last 30 days</span>
-            </div>
-            <canvas id="revenueChart" height="300"></canvas>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <h3>Orders Trend</h3>
-              <span class="chart-period">Last 30 days</span>
-            </div>
-            <canvas id="ordersChart" height="300"></canvas>
-          </div>
-        </div>
-        -->
-
-        <!-- QUICK ACTIONS -->
-        <div class="quick-actions">
-          <h3>Quick Actions</h3>
-          <div class="actions-grid">
-            <a href="/admin/products" class="action-btn">
-              <span class="action-icon">➕</span>
-              <span class="action-text">Add Product</span>
-            </a>
-            <button class="action-btn" id="newOrderBtn">
-              <span class="action-icon">📝</span>
-              <span class="action-text">New Order</span>
-            </button>
-            <button class="action-btn" id="newVolunteerBtn">
-              <span class="action-icon">👤</span>
-              <span class="action-text">Register Volunteer</span>
-            </button>
-            <button class="action-btn" id="viewReportsBtn">
-              <span class="action-icon">📊</span>
-              <span class="action-text">View Reports</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- RECENT ACTIVITY -->
-        <div class="activity-sections">
-          <div class="activity-card">
-            <h3>Recent Orders</h3>
-            <div id="recentOrdersList"></div>
-          </div>
-
-          <div class="activity-card">
-            <h3>Recent Donations</h3>
-            <div id="recentDonationsList"></div>
-          </div>
-
-          <div class="activity-card">
-            <h3>Reviews Awaiting Approval</h3>
-            <div id="reviewsQueueList"></div>
-          </div>
-
-          <div class="activity-card">
-            <h3>Login Activity</h3>
-            <div id="loginActivityList"></div>
-          </div>
+          <p class="stats-footnote">Counts are people, not clicks — each browser is counted once.</p>
         </div>
       </section>
 
-      <!-- OTHER SECTIONS (Placeholders) -->
+      <!-- ORDERS -->
       <section id="ordersSection" class="page-section">
         <div class="page-header">
           <div>
             <h2>Orders</h2>
-            <p>Manage all orders and payments</p>
+            <p>Paid orders — ship the ones marked “To ship”, then update their status</p>
           </div>
           <div class="header-actions">
-            <input type="text" id="orderSearch" class="search-input" placeholder="Search by Order ID or email...">
-            <select id="orderStatus" class="filter-select">
-              <option value="">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
+            <input type="text" id="orderSearch" class="search-input" placeholder="Search by order ID or email…">
+            <select id="orderStatus" class="filter-select" aria-label="Delivery status">
+              <option value="processing">To ship</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="">All orders</option>
             </select>
-            <button class="btn btn-dark" id="orderFilterBtn">Filter</button>
           </div>
         </div>
 
         <div class="orders-table-container">
-          <table class="data-table" id="ordersTable">
+          <table class="data-table">
             <thead>
               <tr>
                 <th>Order ID</th>
-                <th>Customer Email</th>
-                <th>Amount (₹)</th>
-                <th>Status</th>
+                <th>Customer</th>
+                <th>Ship to</th>
+                <th>Amount</th>
+                <th>Delivery</th>
                 <th>Date</th>
-                <th>Action</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="ordersTableBody">
-              <tr><td colspan="6" style="text-align:center; padding:20px;">Loading orders...</td></tr>
+              <tr><td colspan="7" style="text-align:center; padding:20px;">Loading orders…</td></tr>
             </tbody>
           </table>
         </div>
-
         <div class="table-stats" id="ordersStats"></div>
       </section>
 
-      <!-- ORDER DETAILS MODAL -->
-      <div class="modal-overlay" id="orderModal">
-        <div class="modal-content">
-          <button class="modal-close" id="orderModalClose">&times;</button>
-          <h3>Order Details</h3>
-          <div id="orderModalBody"></div>
-          <div class="modal-footer">
-            <button class="btn btn-ghost" id="orderModalCloseBtn">Close</button>
-            <button class="btn btn-dark" id="refundBtn" style="display:none;">Refund</button>
-          </div>
-        </div>
-      </div>
-
-      <section id="productsSection" class="page-section">
+      <!-- SITE IMAGES -->
+      <section id="imagesSection" class="page-section">
         <div class="page-header">
           <div>
-            <h2>Products</h2>
-            <p>Manage artwork and inventory</p>
-          </div>
-          <div class="header-actions">
-            <input type="text" id="productSearch" class="search-input" placeholder="Search by title or artist...">
-            <select id="productCategory" class="filter-select">
-              <option value="">All Categories</option>
-              <option value="painting">Painting</option>
-              <option value="craft">Craft</option>
-              <option value="print">Print</option>
-            </select>
-            <a href="/admin/products" class="btn btn-dark">Full Manager</a>
+            <h2>Site Images</h2>
+            <p>Upload a new image for any section of the website. Changes show up on the homepage straight away.</p>
           </div>
         </div>
 
-        <div class="products-grid" id="productsGrid">
-          <div style="grid-column:1/-1; text-align:center; padding:40px; color:rgba(27,38,32,0.6);">Loading products...</div>
-        </div>
+        <p class="stats-error" id="imagesError" hidden></p>
 
-        <div class="table-stats" id="productsStats"></div>
-      </section>
+        <h3 class="images-group-title">Homepage sections</h3>
+        <div class="image-slot-grid" id="siteImageSlots"></div>
 
-      <!-- PRODUCT DETAILS MODAL -->
-      <div class="modal-overlay" id="productModal">
-        <div class="modal-content">
-          <button class="modal-close" id="productModalClose">&times;</button>
-          <h3>Product Details</h3>
-          <div id="productModalBody"></div>
-          <div class="modal-footer">
-            <button class="btn btn-ghost" id="productModalCloseBtn">Close</button>
-            <a href="/admin/products" class="btn btn-dark">Edit in Manager</a>
-          </div>
-        </div>
-      </div>
-
-      <section id="customersSection" class="page-section">
-        <div class="page-header">
-          <h2>Customers</h2>
-          <p>Customer directory and profiles</p>
-        </div>
-        <div class="placeholder">Customers page coming soon...</div>
-      </section>
-
-      <section id="artisansSection" class="page-section">
-        <div class="page-header">
-          <h2>Artisans</h2>
-          <p>Manage artisan profiles and verification</p>
-        </div>
-        <div class="placeholder">Artisans page coming soon...</div>
-      </section>
-
-      <section id="donationsSection" class="page-section">
-        <div class="page-header">
-          <h2>Donations</h2>
-          <p>Monitor donations and campaigns</p>
-        </div>
-        <div class="placeholder">Donations page coming soon...</div>
-      </section>
-
-      <section id="volunteersSection" class="page-section">
-        <div class="page-header">
-          <h2>Volunteers</h2>
-          <p>Manage volunteer applications and hours</p>
-        </div>
-        <div class="placeholder">Volunteers page coming soon...</div>
-      </section>
-
-      <section id="reviewsSection" class="page-section">
-        <div class="page-header">
-          <h2>Reviews</h2>
-          <p>Moderate customer reviews</p>
-        </div>
-        <div class="placeholder">Reviews page coming soon...</div>
-      </section>
-
-      <section id="contentSection" class="page-section">
-        <div class="page-header">
-          <h2>Content</h2>
-          <p>Manage website content</p>
-        </div>
-        <div class="placeholder">Content page coming soon...</div>
-      </section>
-
-      <section id="analyticsSection" class="page-section">
-        <div class="page-header">
-          <h2>Analytics</h2>
-          <p>Detailed business analytics</p>
-        </div>
-        <div class="placeholder">Analytics page coming soon...</div>
-      </section>
-
-      <section id="notificationsSection" class="page-section">
-        <div class="page-header">
-          <h2>Notifications</h2>
-          <p>Manage alerts and communications</p>
-        </div>
-        <div class="placeholder">Notifications page coming soon...</div>
-      </section>
-
-      <section id="settingsSection" class="page-section">
-        <div class="page-header">
-          <h2>Settings</h2>
-          <p>Admin settings and configuration</p>
-        </div>
-        <div class="placeholder">Settings page coming soon...</div>
-      </section>
-
-      <section id="auditSection" class="page-section">
-        <div class="page-header">
-          <h2>Audit Log</h2>
-          <p>Track all admin actions</p>
-        </div>
-        <div class="placeholder">Audit log page coming soon...</div>
+        <h3 class="images-group-title">Product photos</h3>
+        <div class="image-slot-grid" id="productImageSlots"></div>
       </section>
     </div>
   </main>
 </div>
 
-<script type="module" src="js/admin-dashboard.js"></script>
+<!-- ORDER DETAILS MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-content">
+    <button class="modal-close" id="orderModalClose" aria-label="Close">&times;</button>
+    <h3>Order Details</h3>
+    <div id="orderModalBody"></div>
+  </div>
+</div>
+
+<script type="module" src="/js/admin-dashboard.js"></script>
 </body>
 </html>
