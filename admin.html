@@ -61,14 +61,15 @@
           <span class="nav-icon">📦</span>
           <span class="nav-text">Orders</span>
         </a>
+        <a href="#" class="nav-item" data-section="products">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-text">Products</span>
+        </a>
         <a href="#" class="nav-item" data-section="images">
           <span class="nav-icon">🖼️</span>
           <span class="nav-text">Site Images</span>
         </a>
-        <a href="/admin/products" class="nav-item">
-          <span class="nav-icon">🎨</span>
-          <span class="nav-text">Manage Products</span>
-        </a>
+
       </div>
     </nav>
 
@@ -178,6 +179,22 @@
         <div class="table-stats" id="ordersStats"></div>
       </section>
 
+      <!-- PRODUCTS -->
+      <section id="productsSection" class="page-section">
+        <div class="page-header">
+          <div>
+            <h2>Products</h2>
+            <p>Edit any card and click Save — changes go live in the shop straight away.</p>
+          </div>
+          <div class="header-actions">
+            <label class="show-hidden-toggle"><input type="checkbox" id="showHiddenProducts"> Show hidden <span id="hiddenProductsCount"></span></label>
+            <button type="button" class="btn btn-primary" id="addProductBtn">+ Add product</button>
+          </div>
+        </div>
+        <datalist id="artistSuggestions"></datalist>
+        <div class="ap-grid" id="adminProductGrid"><p class="text-muted">Loading products…</p></div>
+      </section>
+
       <!-- SITE IMAGES -->
       <section id="imagesSection" class="page-section">
         <div class="page-header">
@@ -189,11 +206,8 @@
 
         <p class="stats-error" id="imagesError" hidden></p>
 
-        <h3 class="images-group-title">Homepage sections</h3>
         <div class="image-slot-grid" id="siteImageSlots"></div>
-
-        <h3 class="images-group-title">Product photos</h3>
-        <div class="image-slot-grid" id="productImageSlots"></div>
+        <p class="text-muted">Product photos are changed on each card in <strong>Products</strong>.</p>
       </section>
     </div>
   </main>

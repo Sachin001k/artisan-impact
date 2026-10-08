@@ -1,8 +1,14 @@
 import Razorpay from 'razorpay'
-import { priceCart, getUserFromRequest, getAddressSnapshot } from './_pricing.js'
+import { missingEnv, priceCart, getUserFromRequest, getAddressSnapshot } from './_pricing.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  const missing = missingEnv()
+  if (missing.length) {
+    console.error('Missing env vars:', missing.join(', '))
+    return res.status(500).json({ error: `Payments are not configured on the server (missing ${missing.join(', ')})` })
+  }
 
   const { type, cart, receipt, address_id } = req.body || {}
   let amount // in paise (₹1 = 100 paise)

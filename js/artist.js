@@ -19,6 +19,8 @@ async function init() {
     supabase.from('products').select('*').eq('artist_id', artistId).order('created_at', { ascending: false }),
   ])
 
+  const visibleProducts = (products || []).filter((p) => p.is_active !== false)
+
   if (artistError || !artist) {
     shell.innerHTML = `<p>Couldn't find that artist.</p>`
     console.error(artistError)
@@ -56,8 +58,8 @@ async function init() {
     </div>
     <div class="shop-grid">
       ${
-        products && products.length
-          ? products
+        visibleProducts.length
+          ? visibleProducts
               .map(
                 (p) => `
         <div class="polaroid">

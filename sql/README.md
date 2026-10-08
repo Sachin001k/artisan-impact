@@ -35,7 +35,10 @@ Run after `stats-and-images.sql`. Safe to re-run. Adds:
 - Admin permission to update order delivery status
 - Indexes for common lookups, and unique keys so a retried payment can never create a duplicate order/donation
 
-### 4. `update-product-images.sql` — Add Product Images
+### 4. `admin-artists.sql` — lets admins add artists by typing a new name (Run Once)
+### 5. `product-visibility.sql` — "Remove from shop" can hide products that have past orders (Run Once)
+
+### 6. `update-product-images.sql` — Add Product Images
 Updates product `image_url` fields to point to images in the `/images` folder.
 
 Currently maps:

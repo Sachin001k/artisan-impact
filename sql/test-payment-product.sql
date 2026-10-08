@@ -18,6 +18,6 @@ WHERE title = 'Grandmother''s Garden';
 -- UPDATE products
 -- SET title = 'Grandmother''s Garden',
 --     price_inr = 1800,
---     image_url = 'https://picsum.photos/400/300?random=5'
+--     image_url = null
 -- WHERE title = 'Test Payment — Do Not Buy';
 -- =============================================================================

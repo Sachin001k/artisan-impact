@@ -1,5 +1,5 @@
 -- Run this in Supabase: Project → SQL Editor → New query → paste → Run
--- This replaces the dummy picsum.photos images with your real photos
+-- This sets product photos to the real photos
 -- from the /images folder, matched to the closest product price.
 
 -- first-part-photo-and-product-200rs.jpg (~₹200) → Our Street at Dusk (₹380)
@@ -14,12 +14,9 @@ UPDATE products SET image_url = '/images/first-part-photo-and-product-950rs.jpg'
 -- first-part-photo.jpg (no price hint) → City of Kites (₹450) — arbitrary pick, swap if you'd rather use it elsewhere
 UPDATE products SET image_url = '/images/first-part-photo.jpg' WHERE title = 'City of Kites' AND price_inr = 450;
 
--- These 2 products still have no matching real photo yet — keep them on the
--- picsum.photos placeholders until you have more product photos:
---   Monsoon in Marigold (₹1200)
---   Grandmother's Garden (₹1800)
--- (No action needed — their image_url already points to picsum.photos from
--- the earlier setup and is left untouched by this script.)
+-- Monsoon in Marigold (₹1200) and Grandmother's Garden (₹1800) have no real
+-- photo yet, so they show a plain colour block. Upload one any time from
+-- /admin → Site Images → Product photos (or /admin/products → Edit).
 
 -- =============================================================================
 -- IMAGE REPLACEMENT GUIDE

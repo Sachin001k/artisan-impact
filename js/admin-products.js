@@ -1,209 +1,255 @@
+// /admin → Products: every product is an editable card (photo, name, artist,
+// price, category). "+ Add product" adds a blank card; "Remove from shop"
+// deletes a product, or hides it if past orders / carts still point to it.
+
 import { supabase } from './supabaseClient.js'
-import { initDropdownMenu } from './nav.js'
-import { getUser } from './auth.js'
 import { uploadImage } from './upload.js'
-import { escapeHtml } from './utils.js'
+import { escapeHtml, formatINR, fallbackGradient } from './utils.js'
 
-let currentEditId = null
+const CATEGORIES = [
+  ['painting', 'Painting'],
+  ['craft', 'Craft'],
+  ['print', 'Print'],
+]
+const AVATAR_COLORS = ['#C8432E', '#3457D5', '#2F8F7E', '#E8A23B', '#8a5cd6', '#f2c06e']
+
 let artists = []
+let products = []
+let grid = null
 
-const modal = document.getElementById('productModal')
-const form = document.getElementById('productForm')
-const addBtn = document.getElementById('addProductBtn')
-const cancelBtn = document.getElementById('cancelBtn')
-const logoutBtn = document.getElementById('logoutBtn')
+export function initProductsSection() {
+  grid = document.getElementById('adminProductGrid')
+  document.getElementById('addProductBtn').addEventListener('click', addBlankCard)
+  document.getElementById('showHiddenProducts').addEventListener('change', render)
 
-initDropdownMenu()
-
-async function checkAdmin() {
-  const user = await getUser()
-  if (!user) {
-    window.location.href = '/'
-    return
-  }
-  const { data: isAdmin } = await supabase.rpc('is_admin')
-  if (!isAdmin) {
-    alert('Access denied.')
-    window.location.href = '/'
-    return
-  }
-  document.getElementById('adminUser').textContent = user.email
-  logoutBtn.addEventListener('click', async (e) => {
-    e.preventDefault()
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  })
+  grid.addEventListener('input', (e) => markDirty(e.target.closest('.ap-card')))
+  grid.addEventListener('change', onChange)
+  grid.addEventListener('submit', onSave)
+  grid.addEventListener('click', onClick)
 }
 
-async function loadArtists() {
-  const { data } = await supabase.from('artists').select('*').order('name')
-  artists = data || []
-  const select = document.getElementById('productArtist')
-  select.innerHTML = '<option value="">— Select an artist —</option>'
-  artists.forEach((a) => {
-    const opt = document.createElement('option')
-    opt.value = a.id
-    opt.textContent = a.name
-    select.appendChild(opt)
-  })
-}
-
-async function loadProducts() {
-  const container = document.getElementById('productsTable')
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*, artists(name)')
-    .order('created_at', { ascending: false })
+export async function loadProductsSection() {
+  const [{ data: artistRows }, { data, error }] = await Promise.all([
+    supabase.from('artists').select('id, name').order('name'),
+    supabase.from('products').select('*').order('created_at', { ascending: false }),
+  ])
+  artists = artistRows || []
+  document.getElementById('artistSuggestions').innerHTML = artists
+    .map((a) => `<option value="${escapeHtml(a.name)}"></option>`)
+    .join('')
 
   if (error) {
-    container.innerHTML = `<p class="no-products">Error loading products.</p>`
-    console.error(error)
+    grid.innerHTML = `<p class="stats-error">Couldn’t load products: ${escapeHtml(error.message)}</p>`
     return
   }
-
-  if (!products || products.length === 0) {
-    container.innerHTML = `<p class="no-products">No products yet. Click "Add product" to create one.</p>`
-    return
-  }
-
-  container.innerHTML = `
-    <table class="products-table">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Artist</th>
-          <th>Price</th>
-          <th>Category</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${products
-          .map(
-            (p) => `
-          <tr>
-            <td>${escapeHtml(p.title)}</td>
-            <td>${escapeHtml(p.artists?.name || '—')}</td>
-            <td>₹${p.price_inr}</td>
-            <td><span style="text-transform:capitalize;">${p.category}</span></td>
-            <td>
-              <div class="product-actions">
-                <button class="btn-small btn-edit" onclick="editProduct('${p.id}')">Edit</button>
-                <button class="btn-small btn-delete" onclick="deleteProduct('${p.id}')">Delete</button>
-              </div>
-            </td>
-          </tr>
-        `
-          )
-          .join('')}
-      </tbody>
-    </table>
-  `
+  products = data
+  render()
 }
 
-window.editProduct = async (id) => {
-  const { data: product, error } = await supabase.from('products').select('*').eq('id', id).single()
+// ===== RENDER =====
+function render() {
+  const showHidden = document.getElementById('showHiddenProducts').checked
+  const visible = products.filter((p) => showHidden || p.is_active !== false)
+  const hiddenCount = products.filter((p) => p.is_active === false).length
+  document.getElementById('hiddenProductsCount').textContent = hiddenCount ? `(${hiddenCount})` : ''
+
+  grid.innerHTML = visible.length
+    ? visible.map((p, i) => cardHtml(p, i)).join('')
+    : '<p class="text-muted">No products yet — click “+ Add product”.</p>'
+}
+
+function cardHtml(p, i) {
+  const isNew = !p.id
+  const hidden = p.is_active === false
+  return `
+  <form class="ap-card${hidden ? ' is-hidden' : ''}${isNew ? ' is-new' : ''}" data-id="${p.id || ''}" novalidate>
+    <div class="ap-photo" style="background:${fallbackGradient(i)};">
+      ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="">` : '<span class="ap-photo-empty">No photo yet</span>'}
+      ${hidden ? '<span class="ap-badge">Hidden from shop</span>' : ''}
+      <label class="ap-photo-btn">
+        ${p.image_url ? 'Change photo' : 'Add photo'}
+        <input type="file" accept="image/*" hidden>
+      </label>
+    </div>
+    <input type="hidden" name="image_url" value="${escapeHtml(p.image_url || '')}">
+    <div class="ap-fields">
+      <label class="ap-label">Name<input name="title" required maxlength="80" value="${escapeHtml(p.title || '')}" placeholder="e.g. Monsoon in Marigold"></label>
+      <label class="ap-label">Artist<input name="artist" list="artistSuggestions" required autocomplete="off" value="${escapeHtml(p.artist || '')}" placeholder="Type a name — new names are added"></label>
+      <div class="ap-row">
+        <label class="ap-label">Price (₹)<input name="price_inr" type="number" min="1" step="1" required value="${p.price_inr ?? ''}" placeholder="e.g. 450"></label>
+        <label class="ap-label">Category
+          <select name="category">
+            ${CATEGORIES.map(([v, l]) => `<option value="${v}"${p.category === v ? ' selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="ap-actions">
+      <button type="submit" class="btn btn-dark ap-save"${isNew ? '' : ' disabled'}>${isNew ? 'Add to shop' : 'Save'}</button>
+      ${
+        isNew
+          ? '<button type="button" class="ap-link" data-action="discard">Discard</button>'
+          : hidden
+            ? '<button type="button" class="ap-link" data-action="show">Show in shop</button>'
+            : '<button type="button" class="ap-link danger" data-action="remove">Remove from shop</button>'
+      }
+    </div>
+    <p class="ap-status" aria-live="polite"></p>
+  </form>`
+}
+
+function setStatus(card, text, isError = false) {
+  const el = card.querySelector('.ap-status')
+  el.textContent = text
+  el.classList.toggle('error', isError)
+}
+
+function markDirty(card) {
+  if (!card) return
+  card.querySelector('.ap-save').disabled = false
+  if (card.dataset.id) setStatus(card, 'Unsaved changes')
+}
+
+function addBlankCard() {
+  if (grid.querySelector('.ap-card.is-new')) {
+    grid.querySelector('.ap-card.is-new input[name="title"]').focus()
+    return
+  }
+  if (!grid.querySelector('.ap-card')) grid.innerHTML = ''
+  grid.insertAdjacentHTML('afterbegin', cardHtml({ category: 'painting' }, 0))
+  grid.querySelector('.ap-card.is-new input[name="title"]').focus()
+}
+
+// ===== PHOTO =====
+async function onChange(e) {
+  const input = e.target
+  if (input.type !== 'file' || !input.files?.[0]) return
+  const card = input.closest('.ap-card')
+  setStatus(card, 'Uploading photo…')
+  try {
+    const url = await uploadImage(input.files[0], 'products')
+    card.querySelector('input[name="image_url"]').value = url
+    const photo = card.querySelector('.ap-photo')
+    photo.querySelector('img, .ap-photo-empty')?.remove()
+    photo.insertAdjacentHTML('afterbegin', `<img src="${escapeHtml(url)}" alt="">`)
+    photo.querySelector('.ap-photo-btn').firstChild.textContent = 'Change photo '
+    markDirty(card)
+    setStatus(card, card.dataset.id ? 'Photo uploaded — click Save to put it in the shop' : 'Photo uploaded')
+  } catch (err) {
+    setStatus(card, `Photo upload failed: ${err.message}`, true)
+  } finally {
+    input.value = ''
+  }
+}
+
+// ===== SAVE =====
+// Typed name → existing artist (ignoring capitals), or a new artist row.
+// If the artist can't be created, the product still saves with the name.
+async function resolveArtist(name) {
+  const existing = artists.find((a) => a.name.trim().toLowerCase() === name.toLowerCase())
+  if (existing) return { id: existing.id, name: existing.name }
+  const { data, error } = await supabase
+    .from('artists')
+    .insert({ name, avatar_color: AVATAR_COLORS[artists.length % AVATAR_COLORS.length] })
+    .select('id, name')
+    .single()
   if (error) {
-    alert('Error loading product.')
-    return
+    console.warn('Could not create artist — run sql/admin-artists.sql in Supabase', error)
+    return { id: null, name }
   }
-  currentEditId = id
-  document.getElementById('modalTitle').textContent = 'Edit product'
-  document.getElementById('productTitle').value = product.title
-  document.getElementById('productArtist').value = product.artist_id || ''
-  document.getElementById('productPrice').value = product.price_inr
-  document.getElementById('productCategory').value = product.category
-  document.getElementById('productImage').value = product.image_url || ''
-  document.getElementById('productImageFile').value = ''
-  modal.classList.add('open')
+  artists.push(data)
+  return data
 }
 
-window.deleteProduct = async (id) => {
-  if (!confirm('Are you sure? This cannot be undone.')) return
-  const { data: deleted, error } = await supabase.from('products').delete().eq('id', id).select('id')
-  if (error || !deleted?.length) {
-    alert(
-      error?.code === '23503'
-        ? 'This product has already been ordered, so it can\'t be deleted (past orders still point to it).'
-        : 'Error deleting product. ' + (error?.message || 'Not allowed — run sql/stats-and-images.sql in Supabase.')
-    )
-    return
-  }
-  loadProducts()
-}
-
-addBtn.addEventListener('click', () => {
-  currentEditId = null
-  document.getElementById('modalTitle').textContent = 'Add product'
-  form.reset()
-  modal.classList.add('open')
-})
-
-cancelBtn.addEventListener('click', () => {
-  modal.classList.remove('open')
-})
-
-form.addEventListener('submit', async (e) => {
+async function onSave(e) {
   e.preventDefault()
-  const title = document.getElementById('productTitle').value
-  const artistId = document.getElementById('productArtist').value
-  const price = Number(document.getElementById('productPrice').value)
-  const category = document.getElementById('productCategory').value
-  let imageUrl = document.getElementById('productImage').value.trim() || null
-  const imageFile = document.getElementById('productImageFile').files[0]
-  const saveBtn = form.querySelector('button[type="submit"]')
+  const card = e.target
+  const f = card.elements
+  const title = f.title.value.trim()
+  const artistName = f.artist.value.trim().replace(/\s+/g, ' ')
+  const price = Math.round(Number(f.price_inr.value))
 
-  if (imageFile) {
-    saveBtn.disabled = true
-    saveBtn.textContent = 'Uploading photo…'
-    try {
-      imageUrl = await uploadImage(imageFile, 'products')
-    } catch (err) {
-      alert('Photo upload failed: ' + err.message + '\n\nIf this keeps happening, run sql/stats-and-images.sql in Supabase.')
-      return
-    } finally {
-      saveBtn.disabled = false
-      saveBtn.textContent = 'Save'
-    }
+  if (!title) return setStatus(card, 'Please enter a name', true)
+  if (!artistName) return setStatus(card, 'Please enter the artist', true)
+  if (!Number.isFinite(price) || price < 1) return setStatus(card, 'Price must be at least ₹1', true)
+
+  const saveBtn = card.querySelector('.ap-save')
+  saveBtn.disabled = true
+  setStatus(card, 'Saving…')
+
+  // Keep an existing display name like "Aanya, age 11" if the artist didn't change
+  const original = products.find((p) => p.id === card.dataset.id)
+  const artist = original && original.artist === artistName ? { id: original.artist_id, name: artistName } : await resolveArtist(artistName)
+  const fields = {
+    title,
+    artist: artist.name,
+    artist_id: artist.id,
+    price_inr: price,
+    category: f.category.value,
+    image_url: f.image_url.value || null,
   }
 
-  let error
-  if (currentEditId) {
-    const artistName = artists.find((a) => a.id === artistId)?.name
-    let updated
-    ;({ data: updated, error } = await supabase
-      .from('products')
-      .update({ title, artist_id: artistId, ...(artistName && { artist: artistName }), price_inr: price, category, image_url: imageUrl })
-      .eq('id', currentEditId)
-      .select('id'))
-    if (!error && !updated?.length) error = { message: 'Not allowed — run sql/stats-and-images.sql in Supabase to give admins edit access.' }
-  } else {
-    // For adding, we still need the old `artist` text field for backwards compat
-    const artistName = artists.find((a) => a.id === artistId)?.name || 'Unknown'
-    ;({ error } = await supabase.from('products').insert({
-      title,
-      artist: artistName,
-      artist_id: artistId,
-      price_inr: price,
-      category,
-      image_url: imageUrl,
-    }))
+  const id = card.dataset.id
+  const query = id
+    ? supabase.from('products').update(fields).eq('id', id).select()
+    : supabase.from('products').insert(fields).select()
+  const { data, error } = await query
+
+  if (error || !data?.length) {
+    saveBtn.disabled = false
+    return setStatus(card, error ? `Couldn’t save: ${error.message}` : 'Not allowed — run sql/stats-and-images.sql in Supabase', true)
   }
 
-  if (error) {
-    alert('Error saving product: ' + error.message)
+  const saved = data[0]
+  if (id) products = products.map((p) => (p.id === id ? saved : p))
+  else products.unshift(saved)
+  render()
+  const fresh = grid.querySelector(`.ap-card[data-id="${saved.id}"]`)
+  if (fresh) setStatus(fresh, `✓ Saved — live in the shop at ${formatINR(saved.price_inr)}`)
+}
+
+// ===== REMOVE / SHOW =====
+async function onClick(e) {
+  const btn = e.target.closest('[data-action]')
+  if (!btn) return
+  const card = btn.closest('.ap-card')
+  const id = card.dataset.id
+  const action = btn.dataset.action
+
+  if (action === 'discard') {
+    card.remove()
+    if (!grid.querySelector('.ap-card')) render()
     return
   }
-  modal.classList.remove('open')
-  loadProducts()
-})
 
-modal.addEventListener('click', (e) => {
-  if (e.target === modal) modal.classList.remove('open')
-})
+  if (action === 'show') return setVisibility(card, id, true)
 
-;(async () => {
-  await checkAdmin()
-  await loadArtists()
-  await loadProducts()
-})()
+  if (action === 'remove') {
+    const p = products.find((x) => x.id === id)
+    if (!confirm(`Remove “${p?.title}” from the shop?`)) return
+    // Delete if nothing points to it; otherwise (ordered / in cart history) hide it
+    const { data: deleted, error } = await supabase.from('products').delete().eq('id', id).select('id')
+    if (!error && deleted?.length) {
+      products = products.filter((x) => x.id !== id)
+      return render()
+    }
+    if (error && error.code !== '23503') return setStatus(card, `Couldn’t remove: ${error.message}`, true)
+    return setVisibility(card, id, false)
+  }
+}
+
+async function setVisibility(card, id, isActive) {
+  const { data, error } = await supabase.from('products').update({ is_active: isActive }).eq('id', id).select()
+  if (error || !data?.length) {
+    const needsSql = /is_active/.test(error?.message || '')
+    return setStatus(
+      card,
+      needsSql
+        ? 'This product has past orders, so it can only be hidden — run sql/product-visibility.sql in Supabase first.'
+        : `Couldn’t update: ${error?.message || 'not allowed'}`,
+      true
+    )
+  }
+  products = products.map((p) => (p.id === id ? data[0] : p))
+  render()
+}

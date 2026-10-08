@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import Razorpay from 'razorpay'
-import { getSupabaseAdmin, priceCart, getAddressSnapshot } from './_pricing.js'
+import { missingEnv, getSupabaseAdmin, priceCart, getAddressSnapshot } from './_pricing.js'
 
 function signatureIsValid(orderId, paymentId, signature) {
   const expected = crypto
@@ -14,6 +14,12 @@ function signatureIsValid(orderId, paymentId, signature) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  const missing = missingEnv()
+  if (missing.length) {
+    console.error('Missing env vars:', missing.join(', '))
+    return res.status(500).json({ error: `Payments are not configured on the server (missing ${missing.join(', ')})` })
+  }
 
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, cart, customer_email } = req.body || {}
 

@@ -4,6 +4,12 @@ import { createClient } from '@supabase/supabase-js'
 
 let adminClient = null
 
+// Names (never values) of required server env vars that aren't set.
+// On Vercel these live in Project → Settings → Environment Variables.
+export function missingEnv(names = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']) {
+  return names.filter((n) => !process.env[n])
+}
+
 // Service role key bypasses RLS - only ever used server-side, never in the browser
 export function getSupabaseAdmin() {
   if (!adminClient) {
@@ -26,10 +32,12 @@ export async function priceCart(cart) {
 
   const { data: products, error } = await getSupabaseAdmin()
     .from('products')
-    .select('id, price_inr')
+    .select('*')
     .in('id', [...quantities.keys()])
   if (error) throw error
-  if (products.length !== quantities.size) throw new Error('Some items in your cart are no longer available')
+  if (products.length !== quantities.size || products.some((p) => p.is_active === false)) {
+    throw new Error('Some items in your cart are no longer available')
+  }
 
   const items = products.map((p) => ({ id: p.id, quantity: quantities.get(p.id), price_inr: p.price_inr }))
   const totalInr = items.reduce((sum, i) => sum + i.price_inr * i.quantity, 0)

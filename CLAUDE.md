@@ -14,7 +14,7 @@
 - ✅ **Product Filtering** — Filter by category and price range (under ₹1000)
 - ✅ **Sample Products** — 6 seed products in database (Monsoon in Marigold, Terracotta Bird Set, City of Kites, Grandmother's Garden, Woven Wall Hanging, Our Street at Dusk)
 - ✅ **Cart System** — Add to cart functionality with localStorage persistence
-- ✅ **Product Images** — All 6 products now have dummy images from picsum.photos (ready to replace with real images)
+- ✅ **Product Images** — 4 products use real photos from `/images`; Monsoon in Marigold and Grandmother's Garden have no photo yet (random picsum.photos placeholders removed Oct 2026 — upload real ones via /admin → Site Images)
 
 ### Authentication & User Accounts
 - ✅ **Supabase Auth** — Email + password sign-in/sign-up system
@@ -248,7 +248,7 @@
    - **Files:** `checkout.html`, `js/checkout-page.js`, `js/checkout-button.js`
 
 ### 3. **Add Product Images (Replace Dummy Images)** 🟡 MEDIUM PRIORITY
-   - **Current Status:** All 6 products have dummy picsum.photos images
+   - **Current Status (Oct 2026):** 4 products have real photos; 2 have none yet (random placeholders removed). Upload from /admin → Site Images → Product photos.
    - **Available Images in `/images` folder:**
      - `first-part-photo-and-product-200rs.jpg` (320 KB)
      - `first-part-photo-and-product-650rs.jpg` (148 KB)
@@ -537,6 +537,25 @@
    - **At real scale:** OpenStreetMap's free tile + Nominatim servers have
      fair-use limits — swap to a keyed provider (MapTiler / Google / Mappls)
      in `js/address-form.js` before heavy traffic.
+
+### 15. **Admin Product Cards + Live Deploy Fixes (Oct 8 2026)**
+   - Products are managed in **/admin → Products** as editable cards (photo,
+     name, artist, price, category; "+ Add product"; "Remove from shop").
+     `/admin/products` and the old page are gone (redirect to `/admin#products`).
+     Artist is free text with suggestions — new names create an `artists` row
+     (needs `sql/admin-artists.sql`).
+   - "Remove from shop" deletes a product, or — if past orders / cart events
+     reference it (FK) — sets `products.is_active = false` (needs
+     `sql/product-visibility.sql`). Shop, artist pages and `priceCart` all
+     ignore inactive products.
+   - Live site = **www.artisanimpact.in** (Vercel project `artisan-impact`,
+     deploys from `main`). Functions pinned to `bom1` (Mumbai) — Supabase DB
+     is in ap-south-1 (Mumbai). **Vercel env vars must be set** (RAZORPAY_KEY_ID,
+     RAZORPAY_KEY_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) — on Oct 8 the
+     live API crashed with "`key_id` or `oauthToken` is mandatory" because they
+     weren't. The API now returns a clear JSON error naming any missing var.
+   - **Test Mode keys never move real money.** A real ₹1 settlement test needs
+     Razorpay KYC + Live keys (see PAYMENTS.md → Going live).
 
 ---
 

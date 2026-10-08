@@ -17,7 +17,7 @@ export async function loadProducts() {
     return
   }
 
-  allProducts = data
+  allProducts = data.filter((p) => p.is_active !== false)
   syncCartWithProducts(allProducts)
   renderProducts(allProducts)
 }

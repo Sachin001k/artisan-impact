@@ -4,12 +4,13 @@ import { escapeHtml, formatINR } from './utils.js'
 import { addressHtml, addressLines } from './addresses.js'
 import { IMAGE_SLOTS, fetchSiteImages } from './site-images.js'
 import { uploadImage } from './upload.js'
+import { initProductsSection, loadProductsSection } from './admin-products.js'
 
 const sidebar = document.getElementById('dashboardSidebar')
 const main = document.querySelector('.dashboard-main')
 const loginScreen = document.getElementById('adminLoginScreen')
 
-const SECTION_TITLES = { statistics: 'Statistics', orders: 'Orders', images: 'Site Images' }
+const SECTION_TITLES = { statistics: 'Statistics', orders: 'Orders', products: 'Products', images: 'Site Images' }
 const loadedSections = new Set()
 let allOrders = []
 
@@ -29,7 +30,9 @@ async function initDashboard() {
   sidebar.style.display = ''
   main.style.display = ''
   if (window.innerWidth < 768) sidebar.classList.add('closed')
-  navigateToSection('statistics')
+  // /admin#products etc. opens that section directly
+  const fromHash = location.hash.slice(1)
+  navigateToSection(SECTION_TITLES[fromHash] ? fromHash : 'statistics')
 }
 
 function showLogin(message) {
@@ -63,6 +66,7 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 // ===== NAVIGATION =====
 function navigateToSection(section) {
+  history.replaceState(null, '', section === 'statistics' ? '/admin' : `/admin#${section}`)
   document.querySelectorAll('.page-section').forEach((s) => s.classList.remove('active'))
   document.getElementById(section + 'Section')?.classList.add('active')
 
@@ -75,6 +79,7 @@ function navigateToSection(section) {
   loadedSections.add(section)
   if (section === 'statistics') loadStatistics()
   else if (section === 'orders') loadOrders()
+  else if (section === 'products') loadProductsSection()
   else if (section === 'images') loadImages()
 }
 
@@ -324,10 +329,7 @@ async function loadImages() {
   const errorEl = document.getElementById('imagesError')
   errorEl.hidden = true
 
-  const [siteImages, { data: products, error }] = await Promise.all([
-    fetchSiteImages(),
-    supabase.from('products').select('id, title, artist, image_url').order('created_at', { ascending: false }),
-  ])
+  const siteImages = await fetchSiteImages()
 
   // Homepage defaults, read from the real homepage so they never drift
   const defaults = await fetch('/')
@@ -349,27 +351,14 @@ async function loadImages() {
       canReset: Boolean(siteImages[slot.key]),
     })
   ).join('')
-
-  if (error) {
-    console.error(error)
-    errorEl.textContent = `Could not load products: ${error.message}`
-    errorEl.hidden = false
-    return
-  }
-  document.getElementById('productImageSlots').innerHTML = products
-    .map((p) => slotCard({ id: `product:${p.id}`, title: p.title, subtitle: `by ${p.artist}`, imageUrl: p.image_url }))
-    .join('')
 }
 
 async function saveSlotImage(slotId, imageUrl) {
-  const [kind, key] = slotId.split(/:(.+)/)
-  if (kind === 'site') {
-    if (imageUrl) {
-      return supabase.from('site_images').upsert({ slot: key, image_url: imageUrl, updated_at: new Date().toISOString() })
-    }
-    return supabase.from('site_images').delete().eq('slot', key)
+  const key = slotId.replace(/^site:/, '')
+  if (imageUrl) {
+    return supabase.from('site_images').upsert({ slot: key, image_url: imageUrl, updated_at: new Date().toISOString() })
   }
-  return supabase.from('products').update({ image_url: imageUrl }).eq('id', key).select('id').single()
+  return supabase.from('site_images').delete().eq('slot', key)
 }
 
 const imagesSection = document.getElementById('imagesSection')
@@ -384,8 +373,7 @@ imagesSection.addEventListener('change', async (e) => {
   status.textContent = 'Uploading…'
   status.className = 'image-slot-status'
   try {
-    const folder = slotId.startsWith('product:') ? 'products' : 'site'
-    const url = await uploadImage(input.files[0], folder)
+    const url = await uploadImage(input.files[0], 'site')
     const { error } = await saveSlotImage(slotId, url)
     if (error) throw error
     loadImages()
@@ -414,4 +402,5 @@ imagesSection.addEventListener('click', async (e) => {
 })
 
 // ===== START =====
+initProductsSection()
 initDashboard()

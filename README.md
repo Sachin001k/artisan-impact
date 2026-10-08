@@ -10,8 +10,7 @@ index.html             → homepage (shop, donate, reviews, about) — served at
 checkout.html          → /checkout: delivery address (with map) → pay → confirmed
 account.html           → /account: order history + delivery status, saved addresses
 artist.html, post.html → /artist?id=…, /post?slug=…
-admin.html             → /admin: statistics, orders to ship, site images
-admin-products.html    → /admin/products: add / edit / delete products
+admin.html             → /admin: statistics, orders to ship, products (editable cards), site images
 css/                   → style.css (site), address.css (address form), admin-dashboard.css
 js/
   supabaseClient.js    → Supabase connection (public anon key)
@@ -25,6 +24,7 @@ js/
   auth.js, nav.js      → sign-in modal, header dropdown
   account.js           → /account
   admin-dashboard.js   → /admin
+  admin-products.js    → /admin → Products (edit / add / hide product cards)
   site-images.js, upload.js → admin-changeable homepage images
   track.js             → anonymous visit counting for admin statistics
   donate.js, testimonials.js, blog.js, post.js, artist.js, volunteer.js

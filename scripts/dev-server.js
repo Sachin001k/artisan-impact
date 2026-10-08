@@ -3,7 +3,7 @@
 // Serves the static site AND runs the /api/* functions (Razorpay order
 // creation + payment verification), so payments work locally without the
 // Vercel CLI. Mirrors vercel.json: clean URLs (/account → account.html)
-// and the /admin, /admin/products rewrites.
+// (/account → account.html, /admin/products → admin/products.html).
 //
 // In production Vercel serves the same files and api/*.js functions itself;
 // this file is only for local development.
@@ -25,10 +25,6 @@ const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k])
 const START_PORT = Number(process.env.PORT) || 8000
 const SHOULD_OPEN = process.argv.includes('--open')
 
-const REWRITES = {
-  '/admin': '/admin.html',
-  '/admin/products': '/admin-products.html',
-}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -95,16 +91,15 @@ async function handleApi(req, res, pathname) {
   }
 }
 
-// /index.html → /, /account.html → /account, /admin-products.html → /admin/products
+// /index.html → /, /account.html → /account, old product-admin URLs → /admin#products
 function toCleanUrl(pathname) {
-  if (pathname === '/admin-products.html' || pathname === '/admin-products') return '/admin/products'
+  if (['/admin-products.html', '/admin-products', '/admin/products'].includes(pathname)) return '/admin#products'
   if (pathname.endsWith('/index.html')) return pathname.slice(0, -'index.html'.length)
   if (pathname.endsWith('.html')) return pathname.slice(0, -'.html'.length)
   return null
 }
 
 async function resolveStaticFile(pathname) {
-  pathname = REWRITES[pathname.replace(/\/$/, '')] || pathname
   if (pathname.endsWith('/')) pathname += 'index.html'
 
   const candidates = path.extname(pathname) ? [pathname] : [pathname + '.html', pathname + '/index.html']
