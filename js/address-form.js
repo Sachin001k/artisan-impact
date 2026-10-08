@@ -42,7 +42,10 @@ async function reverseGeocode(lat, lng) {
   return {
     house: [address.house_number, address.building].filter(Boolean).join(', '),
     street: [address.road, address.neighbourhood || address.suburb].filter(Boolean).join(', '),
-    city: address.city || address.town || address.village || address.state_district || address.county || '',
+    // e.g. "Mumbai City District" → "Mumbai"
+    city: (address.city || address.town || address.village || address.state_district || address.county || '')
+      .replace(/\s+(city\s+)?district$/i, '')
+      .replace(/\s+city$/i, ''),
     state: matchState(address.state),
     pincode: (address.postcode || '').replace(/\s/g, ''),
   }
